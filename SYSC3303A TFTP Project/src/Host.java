@@ -13,7 +13,7 @@ import java.net.UnknownHostException;
  * Intermediate Host-side Algorithm
  *
  */
-public class Host {
+public class Host extends Thread{
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket, sendSocket;
 	private byte dataRecieved[] = new byte[100];
@@ -35,111 +35,113 @@ public class Host {
 		}
 	}
 
+	public void run() {
+		try {
+			sendReceievePackets();
+		}catch (Exception e) {
+
+		}
+	}
+
 	public void sendReceievePackets() {
 		// Repeat send and receive requests indefinitely 
-		for(;;) {
-			// Receive a request from Client Instance
-			print("Host: Waiting for packets to arrive.\n");
-			receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
 
-			try {
-				receiveSocket.receive(receivePacket);
-			} catch(IOException e) {
-				print("Host: Closing all ports.");
-				System.exit(1);
-			}
+		// Receive a request from Client Instance
+		print("Host: Waiting for packets to arrive.\n");
+		receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
 
-			print("Host: Packet received.");
-			print("From client: " + receivePacket.getAddress());
-			clientAddress = receivePacket.getAddress();
-			print("Host port: " + receivePacket.getPort());
-			clientPort = receivePacket.getPort();
-			print("Length: " + receivePacket.getLength());
-			clientLength = receivePacket.getLength();
-			print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-			String data = "|";
-			for(int j = 0; j < dataRecieved.length; j++) {
-				data += dataRecieved[j] + "|";
-			}
-			print("Containing (byte): " + data + "\n");
+		try {
+			receiveSocket.receive(receivePacket);
+		} catch(IOException e) {
+			print("Host: Closing all ports.");
+			System.exit(1);
+		}
 
-			// Send the received packets to server at port 69
-			print("Host: Echo packets to server. \n");
+		print("Host: Packet received.");
+		print("From client: " + receivePacket.getAddress());
+		clientAddress = receivePacket.getAddress();
+		print("Host port: " + receivePacket.getPort());
+		clientPort = receivePacket.getPort();
+		print("Length: " + receivePacket.getLength());
+		clientLength = receivePacket.getLength();
+		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
+		String data = "|";
+		for(int j = 0; j < dataRecieved.length; j++) {
+			data += dataRecieved[j] + "|";
+		}
+		print("Containing (byte): " + data + "\n");
 
-			try {
-				sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, InetAddress.getLocalHost(), 69);
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+		// Send the received packets to server at port 69
+		print("Host: Echo packets to server. \n");
 
-			print("Host: Sending packet.");
-			print("To server: " + sendPacket.getAddress());
-			print("Destination server port: " + sendPacket.getPort());
-			print("Length: " + sendPacket.getLength());
-			print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-			String dataToServer = "|";
-			for(int j = 0; j < dataRecieved.length; j++) {
-				dataToServer += dataRecieved[j] + "|";
-			}
-			print("Containing (byte): " + dataToServer + "\n");
+		try {
+			sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, InetAddress.getLocalHost(), 69);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-			try {
-				sendReceiveSocket.send(sendPacket);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+		print("Host: Sending packet.");
+		print("To server: " + sendPacket.getAddress());
+		print("Destination server port: " + sendPacket.getPort());
+		print("Length: " + sendPacket.getLength());
+		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
+		String dataToServer = "|";
+		for(int j = 0; j < dataRecieved.length; j++) {
+			dataToServer += dataRecieved[j] + "|";
+		}
+		print("Containing (byte): " + dataToServer + "\n");
 
-			print("Host: Packet sent to Server.\n");
+		try {
+			sendReceiveSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-			// Receive response from server
-			try {
-				sendReceiveSocket.receive(receivePacket);
-			} catch(IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+		print("Host: Packet sent to Server.\n");
 
-			print("Host: Packet received.");
-			print("From server: " + receivePacket.getAddress());
-			print("Host port: " + receivePacket.getPort());
-			print("Length: " + receivePacket.getLength());
-			print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-			String dataServer = "|";
-			for(int j = 0; j < dataRecieved.length; j++) {
-				dataServer += dataRecieved[j] + "|";
-			}
-			print("Containing (byte): " + dataServer + "\n");
+		// Receive response from server
+		try {
+			sendReceiveSocket.receive(receivePacket);
+		} catch(IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-			sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, clientAddress, clientPort);
+		print("Host: Packet received.");
+		print("From server: " + receivePacket.getAddress());
+		print("Host port: " + receivePacket.getPort());
+		print("Length: " + receivePacket.getLength());
+		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
+		String dataServer = "|";
+		for(int j = 0; j < dataRecieved.length; j++) {
+			dataServer += dataRecieved[j] + "|";
+		}
+		print("Containing (byte): " + dataServer + "\n");
 
-			print("Host: Sending packet.");
-			print("To client: " + clientAddress);
-			print("Destination client port: " + clientPort);
-			print("Length: " + clientLength);
-			print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-			String dataClient = "|";
-			for(int j = 0; j < dataRecieved.length; j++) {
-				dataClient += dataRecieved[j] + "|";
-			}
-			print("Containing (byte): " + dataClient + "\n");
+		sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, clientAddress, clientPort);
 
-			try {
-				sendSocket.send(sendPacket);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+		print("Host: Sending packet.");
+		print("To client: " + clientAddress);
+		print("Destination client port: " + clientPort);
+		print("Length: " + clientLength);
+		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
+		String dataClient = "|";
+		for(int j = 0; j < dataRecieved.length; j++) {
+			dataClient += dataRecieved[j] + "|";
+		}
+		print("Containing (byte): " + dataClient + "\n");
+
+		try {
+			sendSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
 	private void print(String printable) {
 		System.out.println(printable);
-	}
-
-	public static void main(String[] args) {
-		Host host = new Host();
-		host.sendReceievePackets();
 	}
 }
