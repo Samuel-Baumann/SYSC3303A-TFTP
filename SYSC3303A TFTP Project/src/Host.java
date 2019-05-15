@@ -20,7 +20,7 @@ public class Host extends Thread{
 	private InetAddress clientAddress;
 	private int clientPort;
 	private int clientLength;
-
+	public boolean verbose = true;
 
 	public Host() {
 		try {
@@ -141,7 +141,13 @@ public class Host extends Thread{
 		}
 	}
 
+	public void toggleMode(boolean volume){
+		verbose = volume;
+	}
+
 	private void print(String printable) {
-		System.out.println(printable);
+		if(verbose){
+			System.out.println(printable)
+		}
 	}
 }
