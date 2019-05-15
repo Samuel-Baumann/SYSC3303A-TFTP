@@ -12,10 +12,15 @@ import java.net.SocketException;
  *
  */
 public class Server extends Thread{
+	
+	enum volume{
+		VERBOSE, QUIET;
+	}
+	
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket;
 	private byte dataRecieved[] = new byte[100];
-	public boolean verbose = true;
+	private volume mode = volume.VERBOSE;
 
 	// Possible Responses Codes
 	private static final byte validReadRequest[] = {"0".getBytes()[0], "3".getBytes()[0], "0".getBytes()[0], "1".getBytes()[0]};
@@ -105,12 +110,17 @@ public class Server extends Thread{
 
 	}
 	
-	public void toggleMode(boolean volume){
-		verbose = volume;
+	public void setMode(String input){
+		if(input == "verbose"){
+			mode = volume.VERBOSE;
+		}
+		else if(input == "quiet"){
+			mode = volume.QUIET;
+		}
 	}
 
 	private void print(String printable) {
-		if(verbose){
+		if(mode = volume.VERBOSE){
 			System.out.println(printable)
 		}
 	}
