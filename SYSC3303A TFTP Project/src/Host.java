@@ -14,13 +14,18 @@ import java.net.UnknownHostException;
  *
  */
 public class Host extends Thread{
+	
+	enum volume{
+		VERBOSE, QUIET;
+	}
+	
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket, sendSocket;
 	private byte dataRecieved[] = new byte[100];
 	private InetAddress clientAddress;
 	private int clientPort;
 	private int clientLength;
-	public boolean verbose = true;
+	public volume mode = volume.VERBOSE;
 
 	public Host() {
 		try {
@@ -141,13 +146,18 @@ public class Host extends Thread{
 		}
 	}
 
-	public void toggleMode(boolean volume){
-		verbose = volume;
+	public void setMode(String input){
+		if(input == "verbose"){
+			mode = volume.VERBOSE;
+		}
+		else if(input == "quiet"){
+			mode = volume.QUIET;
+		}
 	}
 
 	private void print(String printable) {
-		if(verbose){
-			System.out.println(printable)
+		if(mode == volume.VERBOSE){
+			System.out.println(printable);
 		}
 	}
 }
