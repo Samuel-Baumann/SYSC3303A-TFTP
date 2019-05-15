@@ -13,10 +13,15 @@ import java.net.UnknownHostException;
  * Client-side Algorithm
  *
  */
-public class Client extends Thread{	
+public class Client extends Thread{
+	
+	enum volume{
+		VERBOSE, QUIET;
+	}
+	
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
-	public boolean verbose = true;
+	public volume mode = volume.VERBOSE;
 	
 	public Client() {
 		try {
@@ -122,12 +127,17 @@ public class Client extends Thread{
 		System.exit(0);
 	}
 
-	public void toggleMode(boolean volume){
-		verbose = volume;
+	public void setMode(String input){
+		if(input == "verbose"){
+			mode = volume.VERBOSE;
+		}
+		else if(input == "quiet) {
+			mode = volume.QUIET;
+		}
 	}
 
 	private void print(String printable) {
-		if(verbose){
+		if(mode == volume.VERBOSE){
 			System.out.println(printable)
 		}
 	}
