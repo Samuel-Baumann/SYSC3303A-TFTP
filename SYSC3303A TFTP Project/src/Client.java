@@ -16,6 +16,8 @@ import java.net.UnknownHostException;
 public class Client extends Thread{	
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
+	public boolean verbose = true;
+	
 	public Client() {
 		try {
 			sendReceiveSocket = new DatagramSocket();
@@ -120,7 +122,13 @@ public class Client extends Thread{
 		System.exit(0);
 	}
 
+	public void toggleMode(boolean volume){
+		verbose = volume;
+	}
+
 	private void print(String printable) {
-		System.out.println(printable);
+		if(verbose){
+			System.out.println(printable)
+		}
 	}
 }
