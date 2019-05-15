@@ -6,7 +6,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
- * 
  * @author Group 5
  * @version 5/11/2018 (Iteration #0)
  * 
@@ -16,7 +15,13 @@ import java.net.UnknownHostException;
 public class Client extends Thread{	
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
-	public Client() {
+	private Constants.ModeType consolePrintType;
+	private boolean shutoff;
+	
+	public Client(Constants.ModeType print, boolean shutoff) {
+		this.consolePrintType = print;
+		this.shutoff = shutoff;
+		
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
@@ -28,7 +33,7 @@ public class Client extends Thread{
 		try {
 			sendReceivePackets();
 		} catch (Exception e) {
-	
+			print("Client: Error Occured");
 		}
 	}
 
@@ -121,6 +126,8 @@ public class Client extends Thread{
 	}
 
 	private void print(String printable) {
-		System.out.println(printable);
+		if (consolePrintType == Constants.ModeType.VERBOSE) {
+			System.out.println(printable);
+		}
 	}
 }
