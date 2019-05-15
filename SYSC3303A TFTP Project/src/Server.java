@@ -120,7 +120,7 @@ public class Server extends Thread{
 	}
 
 	private void print(String printable) {
-		if(mode = volume.VERBOSE){
+		if(mode == volume.VERBOSE){
 			System.out.println(printable);
 		}
 	}
