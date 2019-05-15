@@ -5,7 +5,7 @@ public class Runnable {
 		SecondaryServer server = new SecondaryServer();
 		server.start();
 		
-		Host host = new Host();
+		Host host = new Host(Constants.ModeType.VERBOSE);
 		host.start();
 		
 		Client client = new Client(Constants.ModeType.VERBOSE, false);

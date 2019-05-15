@@ -4,12 +4,10 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 /**
- * 
  * @author Group 5
  * @version 5/11/2018 (Iteration #0)
  * 
- * Server-side Algorithm
- *
+ * Secondary Server-side Algorithm
  */
 public class SecondaryServer extends Thread{
 	private DatagramPacket sendPacket, receivePacket;
@@ -101,7 +99,6 @@ public class SecondaryServer extends Thread{
 			e.printStackTrace();
 			System.exit(1);
 		}
-
 	}
 
 	private void print(String printable) {

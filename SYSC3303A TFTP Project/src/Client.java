@@ -10,22 +10,23 @@ import java.net.UnknownHostException;
  * @version 5/11/2018 (Iteration #0)
  * 
  * Client-side Algorithm
- *
  */
 public class Client extends Thread{	
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
-	private Constants.ModeType consolePrintType;
+	private Print printable;
+	private Constants.ModeType mode;
 	private boolean shutoff;
-	
-	public Client(Constants.ModeType print, boolean shutoff) {
-		this.consolePrintType = print;
-		this.shutoff = shutoff;
-		
+
+	public Client(Constants.ModeType mode, boolean shutoff) {
+		this.mode = mode;
+		this.setShutoff(shutoff);
+		printable = new Print(this.mode);
+
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
-			print("CLIENT ERROR OCCURED: " + e.getStackTrace().toString());
+			print("[CLIENT] ERROR OCCURED: " + e.getStackTrace().toString());
 		}
 	}
 
@@ -33,7 +34,7 @@ public class Client extends Thread{
 		try {
 			sendReceivePackets();
 		} catch (Exception e) {
-			print("Client: Error Occured");
+			print("[Client] Thread Error Occured: " + e.getStackTrace().toString());
 		}
 	}
 
@@ -43,15 +44,14 @@ public class Client extends Thread{
 		String mode = "";
 
 		// Alternate between Read (even) and Write (odd) requests.
-//		msg[0] = "0".getBytes()[0];
-//		msg[1] = "1".getBytes()[0];
-//		
-//		msg[0] = "0".getBytes()[0];
-//		msg[1] = "2".getBytes()[0];
-//		
-//		msg[0] = "0".getBytes()[0];
-//		msg[1] = "5".getBytes()[0];		// Invalid Request occurs on the 11th request
-		
+		//		msg[0] = 0;
+		//		msg[1] = 1;
+		//		
+		//		msg[0] = 0;
+		//		msg[1] = 2;
+		//		
+		//		msg[0] = 0;
+		//		msg[1] = 5;		// Invalid Request occurs on the 11th request
 
 		// Convert filename from String to Byte[] and add it to message, then add 0 byte.
 		filename = "test.txt";
@@ -71,19 +71,10 @@ public class Client extends Thread{
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		print("Client: Sending packet.");
-		print("To host: " + sendPacket.getAddress());
-		print("Destination host port: " + sendPacket.getPort());
-		int len = sendPacket.getLength();
-		print("Length: " + len);
-		print("Containing (String): " + new String(sendPacket.getData(),0,len));
-		String byteData = "|";
-		for(int j = 0; j < sendPacket.getData().length; j++) {
-			byteData += sendPacket.getData()[j] + "|";
-		}
-		print("Containing (byte): " + byteData + "\n");
-
+		
+		printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.HOST, sendPacket.getAddress(),
+				sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
+		
 		try {
 			sendReceiveSocket.send(sendPacket);
 		} catch (IOException e) {
@@ -105,17 +96,8 @@ public class Client extends Thread{
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		print("Client: Packet received.");
-		print("From host: " + receivePacket.getAddress());
-		print("Host port: " + receivePacket.getPort());
-		print("Length: " + receivePacket.getLength());
-		print("Containing (String): " + new String(data,0,receivePacket.getLength()));
-		String byteReceivedData = "|";
-		for(int j = 0; j < receivePacket.getLength(); j++) {
-			byteReceivedData += data[j] + "|";
-		}
-		print("Containing (byte): " + byteReceivedData + "\n");
+		printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.HOST, receivePacket.getAddress(),
+				receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 
 		// TODO: Process response code [DATA]
 
@@ -126,8 +108,16 @@ public class Client extends Thread{
 	}
 
 	private void print(String printable) {
-		if (consolePrintType == Constants.ModeType.VERBOSE) {
+		if (mode == Constants.ModeType.VERBOSE) {
 			System.out.println(printable);
 		}
+	}
+
+	public boolean isShutoff() {
+		return shutoff;
+	}
+
+	public void setShutoff(boolean shutoff) {
+		this.shutoff = shutoff;
 	}
 }

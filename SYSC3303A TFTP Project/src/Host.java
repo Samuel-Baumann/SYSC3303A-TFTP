@@ -6,30 +6,29 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
- * 
  * @author Group 5
  * @version 5/11/2018 (Iteration #0)
  * 
  * Intermediate Host-side Algorithm
- *
  */
-public class Host extends Thread{
+public class Host extends Thread {
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket, sendSocket;
 	private byte dataRecieved[] = new byte[100];
 	private InetAddress clientAddress;
+	private Constants.ModeType mode;
+	private Print printable;
 	private int clientPort;
 	private int clientLength;
 
+	public Host(Constants.ModeType mode) {
+		this.mode = mode;
+		printable = new Print(this.mode);
 
-	public Host() {
 		try {
 			receiveSocket = new DatagramSocket(23);
 			sendSocket = new DatagramSocket();
 			sendReceiveSocket = new DatagramSocket();
-			receiveSocket.setSoTimeout(60000);
-			sendSocket.setSoTimeout(60000);
-			sendReceiveSocket.setSoTimeout(60000);
 		} catch (SocketException e){
 			print("HOST ERROR OCCURED: " + e.getStackTrace().toString());
 		}
@@ -38,14 +37,12 @@ public class Host extends Thread{
 	public void run() {
 		try {
 			sendReceievePackets();
-		}catch (Exception e) {
-
+		} catch (Exception e) {
+			print("Host: Thread Error Occured");
 		}
 	}
 
 	public void sendReceievePackets() {
-		// Repeat send and receive requests indefinitely 
-
 		// Receive a request from Client Instance
 		print("Host: Waiting for packets to arrive.\n");
 		receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
@@ -57,22 +54,15 @@ public class Host extends Thread{
 			System.exit(1);
 		}
 
-		print("Host: Packet received.");
-		print("From client: " + receivePacket.getAddress());
 		clientAddress = receivePacket.getAddress();
-		print("Host port: " + receivePacket.getPort());
 		clientPort = receivePacket.getPort();
-		print("Length: " + receivePacket.getLength());
 		clientLength = receivePacket.getLength();
-		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-		String data = "|";
-		for(int j = 0; j < dataRecieved.length; j++) {
-			data += dataRecieved[j] + "|";
-		}
-		print("Containing (byte): " + data + "\n");
+
+		printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, receivePacket.getAddress(),
+				receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 
 		// Send the received packets to server at port 69
-		print("Host: Echo packets to server. \n");
+		print("Host: Echo packets to main server. \n");
 
 		try {
 			sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, InetAddress.getLocalHost(), 69);
@@ -80,17 +70,9 @@ public class Host extends Thread{
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		print("Host: Sending packet.");
-		print("To server: " + sendPacket.getAddress());
-		print("Destination server port: " + sendPacket.getPort());
-		print("Length: " + sendPacket.getLength());
-		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-		String dataToServer = "|";
-		for(int j = 0; j < dataRecieved.length; j++) {
-			dataToServer += dataRecieved[j] + "|";
-		}
-		print("Containing (byte): " + dataToServer + "\n");
+	
+		printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, sendPacket.getAddress(),
+				sendPacket.getPort(), sendPacket.getLength(), dataRecieved);
 
 		try {
 			sendReceiveSocket.send(sendPacket);
@@ -99,9 +81,9 @@ public class Host extends Thread{
 			System.exit(1);
 		}
 
-		print("Host: Packet sent to Server.\n");
+		print("Host: Packet sent to Main Server.\n");
 
-		// Receive response from server
+		// Receive response from Main Server
 		try {
 			sendReceiveSocket.receive(receivePacket);
 		} catch(IOException e) {
@@ -109,29 +91,13 @@ public class Host extends Thread{
 			System.exit(1);
 		}
 
-		print("Host: Packet received.");
-		print("From server: " + receivePacket.getAddress());
-		print("Host port: " + receivePacket.getPort());
-		print("Length: " + receivePacket.getLength());
-		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-		String dataServer = "|";
-		for(int j = 0; j < dataRecieved.length; j++) {
-			dataServer += dataRecieved[j] + "|";
-		}
-		print("Containing (byte): " + dataServer + "\n");
+		// Print the response packet from Main Server
+		printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, receivePacket.getAddress(),
+				receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 
+		// Create a packet response for client and print the contents of the packet before sending
 		sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, clientAddress, clientPort);
-
-		print("Host: Sending packet.");
-		print("To client: " + clientAddress);
-		print("Destination client port: " + clientPort);
-		print("Length: " + clientLength);
-		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-		String dataClient = "|";
-		for(int j = 0; j < dataRecieved.length; j++) {
-			dataClient += dataRecieved[j] + "|";
-		}
-		print("Containing (byte): " + dataClient + "\n");
+		printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, clientAddress, clientPort, clientLength, dataRecieved);
 
 		try {
 			sendSocket.send(sendPacket);
@@ -142,6 +108,8 @@ public class Host extends Thread{
 	}
 
 	private void print(String printable) {
-		System.out.println(printable);
+		if (mode == Constants.ModeType.VERBOSE) {
+			System.out.println(printable);
+		}
 	}
 }

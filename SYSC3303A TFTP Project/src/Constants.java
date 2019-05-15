@@ -12,17 +12,17 @@ public class Constants {
 	        this.type = type;
 	    }
 
-	    public String getNumVal() {
+	    public String getPacketStringType() {
 	        return type;
 	    }
 	}
 	
 	public enum PacketByte {
-		RRQ((byte)0x01),
-		WRQ((byte)0x02),
-		DATA((byte)0x03),
-		ACK((byte)0x04),
-		ERROR((byte)0x05);
+		RRQ((byte)1),
+		WRQ((byte)2),
+		DATA((byte)3),
+		ACK((byte)4),
+		ERROR((byte)5);
 		
 		private byte opCode;
 		
@@ -30,7 +30,7 @@ public class Constants {
 	        this.opCode = opCode;
 	    }
 
-	    public byte getNumVal() {
+	    public byte getPacketByteType() {
 	        return opCode;
 	    }
 	}
@@ -38,5 +38,22 @@ public class Constants {
 	public enum ModeType {
 		VERBOSE,
 		QUIET
+	}
+	
+	public enum ServerType {
+		CLIENT("Client"),
+		HOST("Host"),
+		MAIN_SERVER("Main Server"),
+		SECONDARY_SERVER("Secondary Server");
+		
+		private String type;
+		
+		ServerType(String type) {
+	        this.type = type;
+	    }
+
+	    public String getServerName() {
+	        return type;
+	    }
 	}
 }
