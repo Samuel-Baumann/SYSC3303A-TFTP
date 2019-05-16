@@ -28,7 +28,7 @@ public class Client extends Thread{
 
 	public Client() {
 		this.printable = new Print(mode);
-		
+
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
@@ -51,7 +51,7 @@ public class Client extends Thread{
 		String mode = "";
 		receivePacket = new DatagramPacket(new byte[512], 512);
 		sendPacket = new DatagramPacket(msg, msg.length, InetAddress.getLocalHost(), userPortPrefence);
-		
+
 		for(;;) {
 			if (requestedThreadClosing == true) {
 				msg = new String("CloseServerThreads").getBytes();
@@ -141,12 +141,6 @@ public class Client extends Thread{
 		System.exit(0);
 	}
 
-	private void print(String printable) {
-		if (mode == Constants.ModeType.VERBOSE) {
-			System.out.println(printable);
-		}
-	}
-	
 	public static void getRequestTypeFromUser() throws IOException {		
 		do {
 			System.out.println("Enter (R) for read request, (W) for write request, or (E) for program termination: ");
@@ -169,10 +163,10 @@ public class Client extends Thread{
 	}
 
 	public static void getFileNameFromUser() throws IOException{
-		System.out.println("Enter [1] Default File Location on Server [2] Custom File Location on Server: \n");
+		System.out.println("Enter [1] Default File name on Server (i.e. test.txt) [2] Custom File name on Server: \n");
 		int fileDefault = in.nextInt();
 
-		if (fileDefault == 1) {
+		if (fileDefault == 2) {
 			do {				
 				System.out.println("Enter file name: \n");
 				filename = in.nextLine();
@@ -185,7 +179,13 @@ public class Client extends Thread{
 			System.out.println("Client: Shutdown requested to server");
 			requestedThreadClosing = true;
 		} else {
-			System.out.println("[Client] Filename entered: " + filename);
+			System.out.println("\n [Client] Filename entered: " + filename);
+		}
+	}
+	
+	private void print(String printable) {
+		if (mode == Constants.ModeType.VERBOSE) {
+			System.out.println(printable);
 		}
 	}
 
@@ -202,9 +202,9 @@ public class Client extends Thread{
 		if (userInput.equals("QUIET")) {
 			mode = Constants.ModeType.QUIET;
 		}
-		
+
 		do {
-			System.out.println("Send packets directly to Server or send to Host first ([Y]es / [N]o) ?");
+			System.out.println("Send packets directly to Server or send to Host first ([Y]es {Connect Directly to Server} / [N]o {Host First}) ?");
 			userPreference = in.nextLine().toUpperCase();
 		} while (!(userPreference.equals("Y") || userPreference.equals("N")));
 
@@ -227,7 +227,7 @@ public class Client extends Thread{
 		} catch (Exception e) {
 			System.out.println("[Client] File type error occured: " + e.getMessage());
 		}
-		
+
 		in.close();
 		try {
 			Client client = new Client();

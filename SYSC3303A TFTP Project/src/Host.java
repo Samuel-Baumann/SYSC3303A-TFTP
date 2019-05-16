@@ -42,6 +42,7 @@ public class Host extends Thread {
 	public void sendReceievePackets() throws UnknownHostException {
 		// Receive a request from Client Instance
 		InetAddress address = InetAddress.getLocalHost();
+		InetAddress clientAddress;
 		int port;
 		
 		for(;;) {
@@ -56,6 +57,7 @@ public class Host extends Thread {
 			}
 	
 			port = receivePacket.getPort();
+			clientAddress = receivePacket.getAddress();
 			printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, receivePacket.getAddress(),
 					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 			
@@ -113,10 +115,10 @@ public class Host extends Thread {
 	
 			print("Host: Packet sent to Main Server.\n");
 	
-			receivePacket = new DatagramPacket(new byte[1],1);
 			// Receive response from Secondary Server
+			receivePacket = new DatagramPacket(new byte[512], 512);
 			try {
-				sendReceiveSocket.receive(receivePacket);
+				receiveSocket.receive(receivePacket);
 			} catch(IOException e) {
 				print("Host: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
 				System.exit(1);
@@ -127,7 +129,7 @@ public class Host extends Thread {
 					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 	
 			// Create a packet response for client and print the contents of the packet before sending
-			sendPacket = new DatagramPacket(new byte[1], 1, address, port);
+			sendPacket = new DatagramPacket(new byte[512], 512, clientAddress, port);
 			printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, sendPacket.getAddress(),
 					sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 	

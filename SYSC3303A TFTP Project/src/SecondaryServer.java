@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.file.Files;
 
 /**
  * @author Group 5
@@ -19,6 +20,7 @@ public class SecondaryServer extends Thread{
 	private Print printable;
 	private static File file;
 	private static boolean errorFound = false;
+	private static byte blockNum = 0x00;
 
 	/**
 	 * 
@@ -71,29 +73,31 @@ public class SecondaryServer extends Thread{
 		printable.PrintReceivedPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.MAIN_SERVER, receivePacket.getAddress(),
 				receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 
-		// File process here
-		// this.file = find(new File("C:\\"), new String (dataRecieved, 2, dataRecieved.length-12));
+		// File process here --> This only currently works for test.txt file
+		file = find(new File("Server"), new String ("test.txt"));
 
 		if (errorFound == true) {
-			// Send Error Packet --> Error Message "File doesn't exist on the server
+			throw new Exception("FileNotFoundException");
 		}
 		
-		// Read file into bytes
-		// Loop until data is less than 512 bytes
-		// Verify packet format and send block 0 or 1 bytes of data
-		byte packetResponse[] = new byte[1];
+		byte[] packetResponse = new byte[Files.readAllBytes(file.toPath()).length + 4];
 		if(dataRecieved[1] == Constants.PacketByte.RRQ.getPacketByteType()) {
-			// 1) RRQ Request
-			// 2) Data Sent Back (n-1)
-			// 3) ACK from client (n-1)
-			// 4) Last Data and ACK sent (n)
-			packetResponse = new byte[]{0x00};
+			packetResponse[0] = 0;
+			packetResponse[1] = 3;
+			packetResponse[2] = blockNum;
+			packetResponse[3] = blockNum;
+			try {
+				System.arraycopy(Files.readAllBytes(file.toPath()), 0, packetResponse, 4, Files.readAllBytes(file.toPath()).length);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			blockNum++;
 		} else if(dataRecieved[1] == Constants.PacketByte.WRQ.getPacketByteType()) {
-			// 1) WRQ Request
-			// 2) ACK Sent Back
-			// 3) New Data comes in 512 bytes size
-			// 4) Send ACK for each data until the last (data < 512 bytes)
-			packetResponse = new byte[]{0x01};
+			packetResponse[0] = 0;
+			packetResponse[1] = 4;
+			packetResponse[2] = blockNum;
+			packetResponse[3] = blockNum;
+			blockNum++;
 		} else {
 			throw new Exception("InvalidPacketFormatException");
 		}
@@ -118,7 +122,7 @@ public class SecondaryServer extends Thread{
 	/**
 	 * Recursive file finder.
 	 * 
-	 * @param root the default root folder is C://
+	 * @param root the default root folder that the file is located in
 	 * @param filename filename to be found
 	 * @return file return the file's location in the drive
 	 */
@@ -136,7 +140,7 @@ public class SecondaryServer extends Thread{
 			// If a null directory was inputed i.e directory 
 			// is not found output error message + type of error
 		} catch (NullPointerException e) {
-			print("\nERROR: " + "[" + e.getMessage() + "]" + " Invalid directory was given or file doesn't exist.");
+			print("\nServer File ERROR: " + "[" + e.getMessage() + "]" + " Invalid directory was given or file doesn't exist.");
 			errorFound = true;
 		}
 		//Return full path name

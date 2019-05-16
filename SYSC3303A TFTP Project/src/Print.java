@@ -41,17 +41,19 @@ public class Print {
 
 	private String getPacketType(byte[] data) {
 		String packetType = "";
-		
 		if (data[0] != 0) {
 			packetType = Constants.PacketString.ERROR.getPacketStringType();
 		} else if (data[1] == 1) {
 			packetType = Constants.PacketString.RRQ.getPacketStringType();
 		} else if (data[1] == 2) {
 			packetType = Constants.PacketString.WRQ.getPacketStringType();
+		} else if (data[1] == 3) {
+			packetType = Constants.PacketString.DATA.getPacketStringType();
+		} else if (data[1] == 4) {
+			packetType = Constants.PacketString.ACK.getPacketStringType();
 		} else {
 			packetType = Constants.PacketString.ERROR.getPacketStringType();
 		}
-		
 		return packetType;
 	}
 }
