@@ -41,6 +41,21 @@ public class Constants {
 		QUIET
 	}
 
+	public enum ClientPacketSendType {
+		CONNECT_DIRECTLY(69),
+		HOST_FIRST(23);
+
+		private int port;
+
+		ClientPacketSendType(int port){
+			this.port = port;
+		}
+
+		public int getPortID() {
+			return port;
+		}	
+	}
+
 	public enum ServerType {
 		CLIENT("Client"),
 		HOST("Host"),

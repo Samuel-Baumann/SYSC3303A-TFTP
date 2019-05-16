@@ -14,7 +14,7 @@ import java.net.SocketException;
 public class SecondaryServer extends Thread{
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket;
-	private byte dataRecieved[] = new byte[18];
+	private byte dataRecieved[] = new byte[512];
 	private Constants.ModeType mode;
 	private Print printable;
 	private static File file;
@@ -33,7 +33,9 @@ public class SecondaryServer extends Thread{
 		try {		
 			sendSocket = new DatagramSocket();
 		} catch (SocketException e){
-			print("SERVER ERROR OCCURED: " + e.getStackTrace().toString());
+			System.out.print("[Client] Stack trace information --> ");
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -54,7 +56,7 @@ public class SecondaryServer extends Thread{
 	 */
 	public void sendReceivePackets() throws Exception {
 		// Receive and parse the packet that was sent from main server.
-		print("Server: Waiting for packets to arrive. \n");
+		print("[Secondary Server]: Waiting for packets to arrive. \n");
 		receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
 		InetAddress address = InetAddress.getLocalHost();
 
@@ -106,6 +108,7 @@ public class SecondaryServer extends Thread{
 			print("Secondary Server: Closing thread instance @(PORT " + port + ")");
 			sendSocket.close();
 			Thread.currentThread().interrupt();
+			System.exit(0);
 		} catch (Exception e) {
 			print("Secondary Server: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace());
 			System.exit(1);

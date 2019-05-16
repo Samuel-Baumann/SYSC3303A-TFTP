@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 public class MainServer extends Thread {
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket;	
-	private byte dataRecieved[] = new byte[18];
+	private byte dataRecieved[] = new byte[512];
 	private Constants.ModeType mode;
 	private Print printable;
 	
@@ -62,7 +62,7 @@ public class MainServer extends Thread {
 			
 			// Create a new temporary Secondary Server Thread with the inherited console output mode and start it 
 			SecondaryServer secondaryServer = new SecondaryServer(mode, tempSocket);
-			print("Main Server: Created a new secondary servr instance at port: " + tempSocket.getLocalPort());
+			print("[Main Server]: Created a new secondary server instance at port --> " + tempSocket.getLocalPort());
 			secondaryServer.start();
 			
 			// Send the new packet to Secondary Server 
@@ -75,6 +75,16 @@ public class MainServer extends Thread {
 	private void print(String printable) {
 		if (mode == Constants.ModeType.VERBOSE) {
 			System.out.println(printable);
+		}
+	}
+	
+	public static void main(String[] args) {
+		try {
+			MainServer server = new MainServer(Constants.ModeType.VERBOSE);
+			server.start();
+			System.out.println("[Main Server] ~ Started Main Server");
+		} catch (UnknownHostException e) {
+			System.out.println("[Main Server] ~ Error occured while starting main server: " + e.getMessage());
 		}
 	}
 }

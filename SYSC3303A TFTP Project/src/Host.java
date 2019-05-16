@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 public class Host extends Thread {
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket, sendSocket;
-	private byte dataRecieved[] = new byte[18];
+	private byte dataRecieved[] = new byte[512];
 	private Constants.ModeType mode;
 	private Print printable;
 
@@ -23,7 +23,7 @@ public class Host extends Thread {
 		printable = new Print(this.mode);
 
 		try {
-			receiveSocket = new DatagramSocket(23, InetAddress.getLocalHost());
+			receiveSocket = new DatagramSocket(23);
 			sendSocket = new DatagramSocket();
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
@@ -62,7 +62,31 @@ public class Host extends Thread {
 			String msg = new String(receivePacket.getData());
 			if (msg.equals("CloseServerThreads")) {
 				print("[Host]: Closing all sockets and thread instances ...");
+				// Send the received packets to server at port 69
+				print("Host: Echo packets to main server. \n");
+				
+				try {
+					sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, address, 69);
+				} catch (Exception e) {
+					print("Host: Error occured while creating packet ==> Stack Trace "  + e.getStackTrace().toString());
+					System.exit(1);
+				}
+			
+				printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, sendPacket.getAddress(),
+						sendPacket.getPort(), sendPacket.getLength(), dataRecieved);
+				
+				try {
+					sendReceiveSocket.send(sendPacket);
+				} catch (IOException e) {
+					print("Host: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+					System.exit(1);
+				}
+		
+				print("Host: Packet sent to Main Server.\n");
+				
 				receiveSocket.close();
+				sendSocket.close();
+				sendReceiveSocket.close();
 				Thread.currentThread().interrupt();
 				print("[Host]: Server thread instance closed.");
 				break;
@@ -70,7 +94,6 @@ public class Host extends Thread {
 	
 			// Send the received packets to server at port 69
 			print("Host: Echo packets to main server. \n");
-	
 			try {
 				sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, address, 69);
 			} catch (Exception e) {
@@ -121,5 +144,15 @@ public class Host extends Thread {
 		if (mode == Constants.ModeType.VERBOSE) {
 			System.out.println(printable);
 		}
+	}
+	
+	public static void main(String[] args) {
+		try {
+			Host host = new Host(Constants.ModeType.VERBOSE);
+			host.start();
+			System.out.println("[Host] ~ Started Host \n");
+		} catch (UnknownHostException e) {
+			System.out.println("[host] ~ Error occured while starting host: " + e.getMessage());
+		}	
 	}
 }
