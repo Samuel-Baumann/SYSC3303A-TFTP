@@ -1,6 +1,8 @@
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 /**
@@ -12,36 +14,49 @@ import java.net.SocketException;
 public class SecondaryServer extends Thread{
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket;
-	private byte dataRecieved[] = new byte[100];
+	private byte dataRecieved[] = new byte[18];
+	private Constants.ModeType mode;
+	private Print printable;
+	private static File file;
+	private static boolean errorFound = false;
 
-	// Possible Responses Codes
-	private static final byte validReadRequest[] = {"0".getBytes()[0], "3".getBytes()[0], "0".getBytes()[0], "1".getBytes()[0]};
-	private static final byte validWriteRequest[] = {"0".getBytes()[0], "4".getBytes()[0], "0".getBytes()[0],"0".getBytes()[0]};
-	private static final byte invalidRequest[] = {"0".getBytes()[0], "5".getBytes()[0]};
+	/**
+	 * 
+	 * @param mode
+	 * @param receiveSocket
+	 */
+	public SecondaryServer(Constants.ModeType mode, DatagramSocket receiveSocket) {
+		this.mode = mode;
+		this.receiveSocket = receiveSocket;
+		printable = new Print(this.mode);
 
-	public SecondaryServer() {
-		try {
+		try {		
 			sendSocket = new DatagramSocket();
-			receiveSocket = new DatagramSocket(69);
-			sendSocket.setSoTimeout(60000);
-			receiveSocket.setSoTimeout(60000);
 		} catch (SocketException e){
 			print("SERVER ERROR OCCURED: " + e.getStackTrace().toString());
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void run() {
 		try {
 			sendReceivePackets();
-		}catch (Exception e) {
-
+		} catch (Exception e) {
+			print("Secondary Server: Thread Error Occured -> " + e.getStackTrace().toString());
 		}
 	}
 
-	public void sendReceivePackets() {
-		// Receive and parse the packet that was sent from host.
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	public void sendReceivePackets() throws Exception {
+		// Receive and parse the packet that was sent from main server.
 		print("Server: Waiting for packets to arrive. \n");
 		receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
+		InetAddress address = InetAddress.getLocalHost();
 
 		try {
 			receiveSocket.receive(receivePacket);
@@ -50,58 +65,88 @@ public class SecondaryServer extends Thread{
 			System.exit(1);
 		}
 
-		print("Server: Packet received.");
-		print("From host: " + receivePacket.getAddress());
-		print("Host port: " + receivePacket.getPort());
-		print("Length: " + receivePacket.getLength());
-		print("Containing (String): " + new String(dataRecieved,0,receivePacket.getLength()));
-		String data = "|";
-		for(int j = 0; j < dataRecieved.length; j++) {
-			data += dataRecieved[j] + "|";
-		}
-		print("Containing (byte): " + data + "\n");
+		int port = receivePacket.getPort();
+		printable.PrintReceivedPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.MAIN_SERVER, receivePacket.getAddress(),
+				receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 
-		// Verify packet format
-		byte packetResponse[] = new byte[4];
-		if(dataRecieved[0] == 48 && dataRecieved[1] == 49) {
-			packetResponse = validReadRequest;
-		}else if(dataRecieved[0] == 48 && dataRecieved[1] == 50) {
-			packetResponse = validWriteRequest;
-		}else {
-			packetResponse = invalidRequest;
+		// File process here
+		// this.file = find(new File("C:\\"), new String (dataRecieved, 2, dataRecieved.length-12));
+
+		if (errorFound == true) {
+			// Send Error Packet --> Error Message "File doesnt exist on the server
+		}
+		
+		// Read file into bytes
+
+		// Verify packet format and send block 0 or 1 bytes of data
+		byte packetResponse[] = new byte[1];
+		if(dataRecieved[1] == Constants.PacketByte.RRQ.getPacketByteType()) {
+			// 1) RRQ Request
+			// 2) Data Sent Back (n-1)
+			// 3) ACK from client (n-1)
+			// 4) Last Data and ACK sent (n)
+			packetResponse = new byte[]{0x00};
+		} else if(dataRecieved[1] == Constants.PacketByte.WRQ.getPacketByteType()) {
+			// 1) WRQ Request
+			// 2) ACK Sent Back
+			// 3) New Data comes in 512 bytes size
+			// 4) Send ACK for each data until the last (data < 512 bytes)
+			packetResponse = new byte[]{0x01};
+		} else {
+			throw new Exception("InvalidPacketFormatException");
 		}
 
-		// 5 seconds server delay before sending to host.
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e ) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		// Send echo back to host.
-		sendPacket = new DatagramPacket(packetResponse, packetResponse.length,receivePacket.getAddress(), receivePacket.getPort());
-
-		print("Server: Sending packet.");
-		print("To host: " + sendPacket.getAddress());
-		print("Destination host port: " + sendPacket.getPort());
-		print("Length: " + sendPacket.getLength());
-		print("Containing (String): " + new String(packetResponse,0,packetResponse.length));
-		String dataHost = "|";
-		for(int j = 0; j < packetResponse.length; j++) {
-			dataHost += packetResponse[j] + "|";
-		}
-		print("Containing (byte): " + dataHost + "\n");
+		// Send echo back to Host
+		sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 23);
+		printable.PrintSendingPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.HOST, sendPacket.getAddress(),
+				sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 
 		try {
 			sendSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
+			print("Secondary Server: Closing thread instance @(PORT " + port + ")");
+			sendSocket.close();
+			Thread.currentThread().interrupt();
+		} catch (Exception e) {
+			print("Secondary Server: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
 			System.exit(1);
 		}
 	}
 
+	/**
+	 * Recursive file finder.
+	 * 
+	 * @param root the default root folder is C://
+	 * @param filename filename to be found
+	 * @return file return the file's location in the drive
+	 */
+	public File find(File root, String filename) {
+		try {
+			// Try to find the file
+			for (File temp : root.listFiles()) {
+				if (temp.isDirectory()) {
+					find(temp, filename);
+					// If found assign <file> to path
+				} else if (temp.getName().endsWith(filename)) {
+					file = temp.getAbsoluteFile();
+				}
+			}
+			// If a null directory was inputed i.e directory 
+			// is not found output error message + type of error
+		} catch (NullPointerException e) {
+			print("\nERROR: " + "[" + e.getMessage() + "]" + " Invalid directory was given or file doesn't exist.");
+			errorFound = true;
+		}
+		//Return full path name
+		return file;
+	}
+
+	/**
+	 * 
+	 * @param printable
+	 */
 	private void print(String printable) {
-		System.out.println(printable);
+		if (mode == Constants.ModeType.VERBOSE) {
+			System.out.println(printable);
+		}
 	}
 }

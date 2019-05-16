@@ -14,19 +14,16 @@ import java.net.UnknownHostException;
 public class Host extends Thread {
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket, sendSocket;
-	private byte dataRecieved[] = new byte[100];
-	private InetAddress clientAddress;
+	private byte dataRecieved[] = new byte[18];
 	private Constants.ModeType mode;
 	private Print printable;
-	private int clientPort;
-	private int clientLength;
 
-	public Host(Constants.ModeType mode) {
+	public Host(Constants.ModeType mode) throws UnknownHostException {
 		this.mode = mode;
 		printable = new Print(this.mode);
 
 		try {
-			receiveSocket = new DatagramSocket(23);
+			receiveSocket = new DatagramSocket(23, InetAddress.getLocalHost());
 			sendSocket = new DatagramSocket();
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
@@ -42,68 +39,81 @@ public class Host extends Thread {
 		}
 	}
 
-	public void sendReceievePackets() {
+	public void sendReceievePackets() throws UnknownHostException {
 		// Receive a request from Client Instance
-		print("Host: Waiting for packets to arrive.\n");
-		receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
-
-		try {
-			receiveSocket.receive(receivePacket);
-		} catch(IOException e) {
-			print("Host: Closing all ports.");
-			System.exit(1);
-		}
-
-		clientAddress = receivePacket.getAddress();
-		clientPort = receivePacket.getPort();
-		clientLength = receivePacket.getLength();
-
-		printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, receivePacket.getAddress(),
-				receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
-
-		// Send the received packets to server at port 69
-		print("Host: Echo packets to main server. \n");
-
-		try {
-			sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, InetAddress.getLocalHost(), 69);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		InetAddress address = InetAddress.getLocalHost();
+		int port;
+		
+		for(;;) {
+			print("Host: Waiting for packets to arrive.\n");
+			receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
 	
-		printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, sendPacket.getAddress(),
-				sendPacket.getPort(), sendPacket.getLength(), dataRecieved);
-
-		try {
-			sendReceiveSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		print("Host: Packet sent to Main Server.\n");
-
-		// Receive response from Main Server
-		try {
-			sendReceiveSocket.receive(receivePacket);
-		} catch(IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		// Print the response packet from Main Server
-		printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, receivePacket.getAddress(),
-				receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
-
-		// Create a packet response for client and print the contents of the packet before sending
-		sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, clientAddress, clientPort);
-		printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, clientAddress, clientPort, clientLength, dataRecieved);
-
-		try {
-			sendSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
+			try {
+				receiveSocket.receive(receivePacket);
+			} catch(IOException e) {
+				print("Host: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
+				System.exit(1);
+			}
+	
+			port = receivePacket.getPort();
+			printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, receivePacket.getAddress(),
+					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
+			
+			String msg = new String(receivePacket.getData());
+			if (msg.equals("CloseServerThreads")) {
+				print("[Host]: Closing all sockets and thread instances ...");
+				receiveSocket.close();
+				Thread.currentThread().interrupt();
+				print("[Host]: Server thread instance closed.");
+				break;
+			}
+	
+			// Send the received packets to server at port 69
+			print("Host: Echo packets to main server. \n");
+	
+			try {
+				sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, address, 69);
+			} catch (Exception e) {
+				print("Host: Error occured while creating packet ==> Stack Trace "  + e.getStackTrace().toString());
+				System.exit(1);
+			}
+		
+			printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, sendPacket.getAddress(),
+					sendPacket.getPort(), sendPacket.getLength(), dataRecieved);
+	
+			try {
+				sendReceiveSocket.send(sendPacket);
+			} catch (IOException e) {
+				print("Host: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+				System.exit(1);
+			}
+	
+			print("Host: Packet sent to Main Server.\n");
+	
+			receivePacket = new DatagramPacket(new byte[1],1);
+			// Receive response from Secondary Server
+			try {
+				sendReceiveSocket.receive(receivePacket);
+			} catch(IOException e) {
+				print("Host: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
+				System.exit(1);
+			}
+	
+			// Print the response packet from Secondary Server
+			printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.SECONDARY_SERVER, receivePacket.getAddress(),
+					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
+	
+			// Create a packet response for client and print the contents of the packet before sending
+			sendPacket = new DatagramPacket(new byte[1], 1, address, port);
+			printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, sendPacket.getAddress(),
+					sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
+	
+			try {
+				sendSocket.send(sendPacket);
+			} catch (IOException e) {
+				print("Host: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+				System.exit(1);
+			}
 		}
 	}
 

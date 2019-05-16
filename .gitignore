@@ -5,3 +5,4 @@
 .recommenders/index/http___download_eclipse_org_recommenders_models_photon_/write.lock
 *.fdt
 .recommenders/index/http___download_eclipse_org_recommenders_models_photon_/write.lock
+*.fdx
