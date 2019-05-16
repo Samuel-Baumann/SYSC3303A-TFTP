@@ -73,11 +73,11 @@ public class SecondaryServer extends Thread{
 		// this.file = find(new File("C:\\"), new String (dataRecieved, 2, dataRecieved.length-12));
 
 		if (errorFound == true) {
-			// Send Error Packet --> Error Message "File doesnt exist on the server
+			// Send Error Packet --> Error Message "File doesn't exist on the server
 		}
 		
 		// Read file into bytes
-
+		// Loop until data is less than 512 bytes
 		// Verify packet format and send block 0 or 1 bytes of data
 		byte packetResponse[] = new byte[1];
 		if(dataRecieved[1] == Constants.PacketByte.RRQ.getPacketByteType()) {
@@ -107,7 +107,7 @@ public class SecondaryServer extends Thread{
 			sendSocket.close();
 			Thread.currentThread().interrupt();
 		} catch (Exception e) {
-			print("Secondary Server: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+			print("Secondary Server: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace());
 			System.exit(1);
 		}
 	}

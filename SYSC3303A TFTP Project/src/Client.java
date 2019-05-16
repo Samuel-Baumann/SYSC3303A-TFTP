@@ -18,6 +18,7 @@ public class Client extends Thread{
 	private Print printable;
 	private Constants.ModeType mode;
 	private boolean requestedThreadClosing;
+	private Scanner in = new Scanner(System.in);
 	
 	public Client(Constants.ModeType mode, boolean requestedThreadClosing) {
 		this.mode = mode;
@@ -35,7 +36,7 @@ public class Client extends Thread{
 		try {
 			sendReceivePackets();
 		} catch (Exception e) {
-			print("[Client] Thread Error Occured: " + e.getStackTrace().toString());
+			print("[Client] Thread Error Occured: " + e.getMessage());
 		}
 	}
 
@@ -43,8 +44,8 @@ public class Client extends Thread{
 		byte msg[] = new byte[18];
 		String filename = "";
 		String mode = "";
-		Scanner in = new Scanner(System.in);
 		String typeOfRequest = "";
+		String optionSelected;
 
 		sendPacket = new DatagramPacket(new byte[18], 18, InetAddress.getLocalHost(), 23);
 		receivePacket = new DatagramPacket(new byte[1], 1);
@@ -54,10 +55,11 @@ public class Client extends Thread{
 				if (requestedThreadClosing == true) {
 					break;
 				}
-				print("Enter (R) for read request, (W) for write request, or (E) for program termination: ");
-				String optionSelected = in.nextLine();
+				System.out.print("Enter (R) for read request, (W) for write request, or (E) for program termination: ");
+				optionSelected = in.nextLine();
 				if (optionSelected.toUpperCase().equals("R")) {
 					typeOfRequest = Constants.PacketString.RRQ.getPacketStringType();
+					print(typeOfRequest);
 					break;
 				} else if (optionSelected.toUpperCase().equals("W")) {
 					typeOfRequest = Constants.PacketString.WRQ.getPacketStringType();
@@ -135,6 +137,7 @@ public class Client extends Thread{
 					sendPacket.setData(msg);
 				}
 				
+				// Add actual packet send or build logic
 				if (typeOfRequest.equals("RRQ")) {
 					print("[Client]: Reading file");
 				} else {

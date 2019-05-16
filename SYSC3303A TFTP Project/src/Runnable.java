@@ -3,7 +3,6 @@ import java.util.Scanner;
 
 public class Runnable {
 	public static void main(String[] args) throws UnknownHostException {
-		// TODO: Do while for verbose or quiet mode
 		Constants.ModeType mode;
 		Scanner in = new Scanner(System.in);
 		
