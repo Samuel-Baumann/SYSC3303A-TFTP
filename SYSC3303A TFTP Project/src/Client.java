@@ -189,7 +189,27 @@ public class Client extends Thread{
 		}
 	}
 
-	public static void main(String[] args) throws IOException {		
+	public static void main(String[] args) throws IOException {
+		/**
+		 * Note 1: Client user interface should be able handle the following tasks:
+		 * 
+		 * 1) The file transfer operation (read file from server, write file to server)
+		 * 2) The name of the file that is to be transferred 
+		 * 
+		 *------------------------------------------------------------------------------
+		 *------------------------------------------------------------------------------
+		 * 
+		 * Note 2: Client UI needs the following information from the user:
+		 * 
+		 * 1) Normal or Test Mode
+		 * 2) Verbose or Quiet Mode
+		 * 3) IP Address of Server
+		 * 4) Client Directory
+		 * 5) Packet information printed to console if verbose is enabled for all clients,
+		 * 	  host (error simulator), and server
+		 * 
+		 */
+		
 		do {
 			System.out.println("Enter console output mode (VERBOSE or QUIET)");
 			userInput = in.nextLine().toUpperCase();
@@ -203,6 +223,7 @@ public class Client extends Thread{
 			mode = Constants.ModeType.QUIET;
 		}
 
+		// TODO: Change this to normal or test mode 
 		do {
 			System.out.println("Send packets directly to Server or send to Host first ([Y]es {Connect Directly to Server} / [N]o {Host First}) ?");
 			userPreference = in.nextLine().toUpperCase();

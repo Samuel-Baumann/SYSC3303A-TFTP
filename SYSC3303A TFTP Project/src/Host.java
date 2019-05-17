@@ -129,7 +129,7 @@ public class Host extends Thread {
 					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 	
 			// Create a packet response for client and print the contents of the packet before sending
-			sendPacket = new DatagramPacket(new byte[512], 512, clientAddress, port);
+			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), clientAddress, port);
 			printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, sendPacket.getAddress(),
 					sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 	

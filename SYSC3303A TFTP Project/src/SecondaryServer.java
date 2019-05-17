@@ -111,8 +111,7 @@ public class SecondaryServer extends Thread{
 			sendSocket.send(sendPacket);
 			print("Secondary Server: Closing thread instance @(PORT " + port + ")");
 			sendSocket.close();
-			Thread.currentThread().interrupt();
-			System.exit(0);
+			SecondaryServer.currentThread().interrupt();
 		} catch (Exception e) {
 			print("Secondary Server: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace());
 			System.exit(1);
