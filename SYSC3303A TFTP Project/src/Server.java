@@ -7,18 +7,23 @@ import java.net.UnknownHostException;
 
 /**
  * @author Group 5
- * @version 5/11/2018 (Iteration #0)
+ * @version 5/21/2018 (Iteration #1)
  * 
  * Main Server-side Algorithm
  */
-public class MainServer extends Thread {
+public class Server extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket;	
 	private byte dataRecieved[] = new byte[512];
 	private Constants.ModeType mode;
 	private Print printable;
 	
-	public MainServer(Constants.ModeType mode) throws UnknownHostException {
+	/**
+	 * 
+	 * @param mode
+	 * @throws UnknownHostException
+	 */
+	public Server(Constants.ModeType mode) throws UnknownHostException {
 		this.mode = mode;
 		printable = new Print(this.mode);
 		
@@ -26,10 +31,13 @@ public class MainServer extends Thread {
 			sendSocket = new DatagramSocket();
 			receiveSocket = new DatagramSocket(69, InetAddress.getLocalHost());
 		} catch (SocketException e){
-			print("MAIN SERVER ERROR OCCURED: " + e.getStackTrace().toString());
+			print("MAIN SERVER ERROR OCCURED: " + e.getMessage());
 		}
 	}
 	
+	/**
+	 * 
+	 */
 	public void run() {
 		try {
 			createSecondaryServerInstance();
@@ -38,6 +46,10 @@ public class MainServer extends Thread {
 		}
 	}
 	
+	/**
+	 * 
+	 * @throws IOException
+	 */
 	public void createSecondaryServerInstance() throws IOException {
 		receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
 		sendPacket = receivePacket;
@@ -61,9 +73,9 @@ public class MainServer extends Thread {
 			sendPacket.setPort(tempSocket.getLocalPort());
 			
 			// Create a new temporary Secondary Server Thread with the inherited console output mode and start it 
-			SecondaryServer secondaryServer = new SecondaryServer(mode, tempSocket);
+			ServerConnectionHandler serverConnectionHandler = new ServerConnectionHandler(mode, tempSocket);
 			print("[Main Server]: Created a new secondary server instance at port --> " + tempSocket.getLocalPort());
-			secondaryServer.start();
+			serverConnectionHandler.start();
 			
 			// Send the new packet to Secondary Server 
 			printable.PrintSendingPackets(Constants.ServerType.MAIN_SERVER, Constants.ServerType.SECONDARY_SERVER,
@@ -72,6 +84,10 @@ public class MainServer extends Thread {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param printable
+	 */
 	private void print(String printable) {
 		if (mode == Constants.ModeType.VERBOSE) {
 			System.out.println(printable);
@@ -80,7 +96,7 @@ public class MainServer extends Thread {
 	
 	public static void main(String[] args) {
 		try {
-			MainServer server = new MainServer(Constants.ModeType.VERBOSE);
+			Server server = new Server(Constants.ModeType.VERBOSE);
 			server.start();
 			System.out.println("[Main Server] ~ Started Main Server");
 		} catch (UnknownHostException e) {

@@ -1,3 +1,9 @@
+/**
+ * @author Group 5
+ * @version 5/21/2018 (Iteration #1)
+ * 
+ * Constants used by Client, ErrorSimulator (Error Simulation), and Main Server
+ */
 public class Constants {
 	public enum PacketString {
 		RRQ("RRQ"),
@@ -42,8 +48,8 @@ public class Constants {
 	}
 
 	public enum ClientPacketSendType {
-		CONNECT_DIRECTLY(69),
-		HOST_FIRST(23);
+		NORMAL(69),
+		TEST(23);
 
 		private int port;
 
@@ -58,7 +64,7 @@ public class Constants {
 
 	public enum ServerType {
 		CLIENT("Client"),
-		HOST("Host"),
+		HOST("ErrorSimulator"),
 		MAIN_SERVER("Main Server"),
 		SECONDARY_SERVER("Secondary Server");
 

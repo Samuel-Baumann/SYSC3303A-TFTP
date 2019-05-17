@@ -1,12 +1,31 @@
 import java.net.InetAddress;
 
+/**
+ * @author Group 5
+ * @version 5/21/2018 (Iteration #1)
+ * 
+ * Print helper class
+ */
 public class Print {
 	private Constants.ModeType mode;
 
+	/**
+	 * 
+	 * @param mode
+	 */
 	public Print(Constants.ModeType mode) {
 		this.mode = mode;
 	}
 
+	/**
+	 * 
+	 * @param serverSender
+	 * @param serverReciever
+	 * @param address
+	 * @param port
+	 * @param length
+	 * @param data
+	 */
 	public void PrintSendingPackets(Constants.ServerType serverSender, Constants.ServerType serverReciever, InetAddress address, int port, int length, byte[] data) {
 		if (mode != Constants.ModeType.QUIET) {
 			System.out.println("[" + serverSender.getServerName() + "]: Sending packet.");
@@ -23,6 +42,15 @@ public class Print {
 		}
 	}
 
+	/**
+	 * 
+	 * @param serverReciever
+	 * @param serverSender
+	 * @param address
+	 * @param port
+	 * @param length
+	 * @param data
+	 */
 	public void PrintReceivedPackets(Constants.ServerType serverReciever, Constants.ServerType serverSender, InetAddress address, int port, int length, byte[] data) {
 		if (mode != Constants.ModeType.QUIET) {
 			System.out.println("[" + serverReciever.getServerName() + "]: Packet recieved");
@@ -39,6 +67,11 @@ public class Print {
 		}
 	}
 
+	/**
+	 * 
+	 * @param data
+	 * @return
+	 */
 	private String getPacketType(byte[] data) {
 		String packetType = "";
 		if (data[0] != 0) {

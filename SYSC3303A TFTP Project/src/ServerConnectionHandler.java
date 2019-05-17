@@ -8,11 +8,13 @@ import java.nio.file.Files;
 
 /**
  * @author Group 5
- * @version 5/11/2018 (Iteration #0)
+ * @version 5/21/2018 (Iteration #1)
  * 
- * Secondary Server-side Algorithm
+ * Client to Server connection handler, any file transfer to and from 
+ * clients is handled by this thread until file transfer is complete 
+ * then it will terminate. 
  */
-public class SecondaryServer extends Thread{
+public class ServerConnectionHandler extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket;
 	private byte dataRecieved[] = new byte[512];
@@ -27,7 +29,7 @@ public class SecondaryServer extends Thread{
 	 * @param mode
 	 * @param receiveSocket
 	 */
-	public SecondaryServer(Constants.ModeType mode, DatagramSocket receiveSocket) {
+	public ServerConnectionHandler(Constants.ModeType mode, DatagramSocket receiveSocket) {
 		this.mode = mode;
 		this.receiveSocket = receiveSocket;
 		printable = new Print(this.mode);
@@ -79,7 +81,7 @@ public class SecondaryServer extends Thread{
 		if (errorFound == true) {
 			throw new Exception("FileNotFoundException");
 		}
-		
+
 		byte[] packetResponse = new byte[Files.readAllBytes(file.toPath()).length + 4];
 		if(dataRecieved[1] == Constants.PacketByte.RRQ.getPacketByteType()) {
 			packetResponse[0] = 0;
@@ -102,16 +104,16 @@ public class SecondaryServer extends Thread{
 			throw new Exception("InvalidPacketFormatException");
 		}
 
-		// Send echo back to Host
-		sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 23);
-		printable.PrintSendingPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.HOST, sendPacket.getAddress(),
+		// Send to client 
+		sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 42);
+		printable.PrintSendingPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
 				sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 
 		try {
 			sendSocket.send(sendPacket);
 			print("Secondary Server: Closing thread instance @(PORT " + port + ")");
 			sendSocket.close();
-			SecondaryServer.currentThread().interrupt();
+			ServerConnectionHandler.currentThread().interrupt();
 		} catch (Exception e) {
 			print("Secondary Server: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace());
 			System.exit(1);

@@ -7,18 +7,23 @@ import java.net.UnknownHostException;
 
 /**
  * @author Group 5
- * @version 5/11/2018 (Iteration #0)
+ * @version 5/21/2018 (Iteration #1)
  * 
- * Intermediate Host-side Algorithm
+ * Error Simulator Algorithm
  */
-public class Host extends Thread {
+public class ErrorSimulator extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket, sendSocket;
 	private byte dataRecieved[] = new byte[512];
 	private Constants.ModeType mode;
 	private Print printable;
 
-	public Host(Constants.ModeType mode) throws UnknownHostException {
+	/**
+	 * 
+	 * @param mode
+	 * @throws UnknownHostException
+	 */
+	public ErrorSimulator(Constants.ModeType mode) throws UnknownHostException {
 		this.mode = mode;
 		printable = new Print(this.mode);
 
@@ -27,32 +32,39 @@ public class Host extends Thread {
 			sendSocket = new DatagramSocket();
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
-			print("HOST ERROR OCCURED: " + e.getStackTrace().toString());
+			print("HOST ERROR OCCURED: " + e.getMessage());
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void run() {
 		try {
 			sendReceievePackets();
 		} catch (Exception e) {
-			print("Host: Thread Error Occured");
+			print("ErrorSimulator: Thread Error Occured");
 		}
 	}
 
+	/**
+	 * 
+	 * @throws UnknownHostException
+	 */
 	public void sendReceievePackets() throws UnknownHostException {
 		// Receive a request from Client Instance
-		InetAddress address = InetAddress.getLocalHost();
+		InetAddress address = Client.getServerAddress();
 		InetAddress clientAddress;
 		int port;
 		
 		for(;;) {
-			print("Host: Waiting for packets to arrive.\n");
+			print("ErrorSimulator: Waiting for packets to arrive.\n");
 			receivePacket = new DatagramPacket(dataRecieved, dataRecieved.length);
 	
 			try {
 				receiveSocket.receive(receivePacket);
 			} catch(IOException e) {
-				print("Host: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
+				print("ErrorSimulator: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
 				System.exit(1);
 			}
 	
@@ -63,14 +75,14 @@ public class Host extends Thread {
 			
 			String msg = new String(receivePacket.getData());
 			if (msg.equals("CloseServerThreads")) {
-				print("[Host]: Closing all sockets and thread instances ...");
+				print("[ErrorSimulator]: Closing all sockets and thread instances ...");
 				// Send the received packets to server at port 69
-				print("Host: Echo packets to main server. \n");
+				print("ErrorSimulator: Echo packets to main server. \n");
 				
 				try {
 					sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, address, 69);
 				} catch (Exception e) {
-					print("Host: Error occured while creating packet ==> Stack Trace "  + e.getStackTrace().toString());
+					print("ErrorSimulator: Error occured while creating packet ==> Stack Trace "  + e.getStackTrace().toString());
 					System.exit(1);
 				}
 			
@@ -80,26 +92,26 @@ public class Host extends Thread {
 				try {
 					sendReceiveSocket.send(sendPacket);
 				} catch (IOException e) {
-					print("Host: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+					print("ErrorSimulator: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
 					System.exit(1);
 				}
 		
-				print("Host: Packet sent to Main Server.\n");
+				print("ErrorSimulator: Packet sent to Main Server.\n");
 				
 				receiveSocket.close();
 				sendSocket.close();
 				sendReceiveSocket.close();
 				Thread.currentThread().interrupt();
-				print("[Host]: Server thread instance closed.");
+				print("[ErrorSimulator]: Server thread instance closed.");
 				break;
 			}
 	
 			// Send the received packets to server at port 69
-			print("Host: Echo packets to main server. \n");
+			print("ErrorSimulator: Echo packets to main server. \n");
 			try {
 				sendPacket = new DatagramPacket(dataRecieved, dataRecieved.length, address, 69);
 			} catch (Exception e) {
-				print("Host: Error occured while creating packet ==> Stack Trace "  + e.getStackTrace().toString());
+				print("ErrorSimulator: Error occured while creating packet ==> Stack Trace "  + e.getStackTrace().toString());
 				System.exit(1);
 			}
 		
@@ -109,18 +121,18 @@ public class Host extends Thread {
 			try {
 				sendReceiveSocket.send(sendPacket);
 			} catch (IOException e) {
-				print("Host: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+				print("ErrorSimulator: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
 				System.exit(1);
 			}
 	
-			print("Host: Packet sent to Main Server.\n");
+			print("ErrorSimulator: Packet sent to Main Server.\n");
 	
 			// Receive response from Secondary Server
 			receivePacket = new DatagramPacket(new byte[512], 512);
 			try {
 				receiveSocket.receive(receivePacket);
 			} catch(IOException e) {
-				print("Host: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
+				print("ErrorSimulator: Error occured while receiving packet ==> Stack Trace "  + e.getStackTrace().toString());
 				System.exit(1);
 			}
 	
@@ -136,12 +148,16 @@ public class Host extends Thread {
 			try {
 				sendSocket.send(sendPacket);
 			} catch (IOException e) {
-				print("Host: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
+				print("ErrorSimulator: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
 				System.exit(1);
 			}
 		}
 	}
 
+	/**
+	 * 
+	 * @param printable
+	 */
 	private void print(String printable) {
 		if (mode == Constants.ModeType.VERBOSE) {
 			System.out.println(printable);
@@ -150,9 +166,9 @@ public class Host extends Thread {
 	
 	public static void main(String[] args) {
 		try {
-			Host host = new Host(Constants.ModeType.VERBOSE);
-			host.start();
-			System.out.println("[Host] ~ Started Host \n");
+			ErrorSimulator errorSimulator = new ErrorSimulator(Constants.ModeType.VERBOSE);
+			errorSimulator.start();
+			System.out.println("[ErrorSimulator] ~ Started ErrorSimulator \n");
 		} catch (UnknownHostException e) {
 			System.out.println("[host] ~ Error occured while starting host: " + e.getMessage());
 		}	
