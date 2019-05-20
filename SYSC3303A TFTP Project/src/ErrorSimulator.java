@@ -6,10 +6,11 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
- * @author Group 5
+ * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
  * Error Simulator Algorithm
+ * 
  */
 public class ErrorSimulator extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
@@ -32,7 +33,7 @@ public class ErrorSimulator extends Thread implements Runnable{
 			sendSocket = new DatagramSocket();
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e){
-			print("HOST ERROR OCCURED: " + e.getMessage());
+			print("ErrorSimulator: Socket Error Occured --> " + e.getMessage());
 		}
 	}
 
@@ -70,7 +71,7 @@ public class ErrorSimulator extends Thread implements Runnable{
 	
 			port = receivePacket.getPort();
 			clientAddress = receivePacket.getAddress();
-			printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, receivePacket.getAddress(),
+			printable.PrintReceivedPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, receivePacket.getAddress(),
 					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 			
 			String msg = new String(receivePacket.getData());
@@ -86,7 +87,7 @@ public class ErrorSimulator extends Thread implements Runnable{
 					System.exit(1);
 				}
 			
-				printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, sendPacket.getAddress(),
+				printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, sendPacket.getAddress(),
 						sendPacket.getPort(), sendPacket.getLength(), dataRecieved);
 				
 				try {
@@ -115,7 +116,7 @@ public class ErrorSimulator extends Thread implements Runnable{
 				System.exit(1);
 			}
 		
-			printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.MAIN_SERVER, sendPacket.getAddress(),
+			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, sendPacket.getAddress(),
 					sendPacket.getPort(), sendPacket.getLength(), dataRecieved);
 	
 			try {
@@ -137,12 +138,12 @@ public class ErrorSimulator extends Thread implements Runnable{
 			}
 	
 			// Print the response packet from Secondary Server
-			printable.PrintReceivedPackets(Constants.ServerType.HOST, Constants.ServerType.SECONDARY_SERVER, receivePacket.getAddress(),
+			printable.PrintReceivedPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER_CONNECTION_HANDLER, receivePacket.getAddress(),
 					receivePacket.getPort(), receivePacket.getLength(), dataRecieved);
 	
 			// Create a packet response for client and print the contents of the packet before sending
 			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), clientAddress, port);
-			printable.PrintSendingPackets(Constants.ServerType.HOST, Constants.ServerType.CLIENT, sendPacket.getAddress(),
+			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, sendPacket.getAddress(),
 					sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 	
 			try {

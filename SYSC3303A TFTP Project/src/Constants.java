@@ -1,8 +1,9 @@
 /**
- * @author Group 5
+ * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * Constants used by Client, ErrorSimulator (Error Simulation), and Main Server
+ * Common constants used by Client, Error Simulator, and Server
+ * 
  */
 public class Constants {
 	public enum PacketString {
@@ -64,9 +65,9 @@ public class Constants {
 
 	public enum ServerType {
 		CLIENT("Client"),
-		HOST("ErrorSimulator"),
-		MAIN_SERVER("Main Server"),
-		SECONDARY_SERVER("Secondary Server");
+		ERROR_SIMULATOR("Error Simulator"),
+		SERVER("Server"),
+		SERVER_CONNECTION_HANDLER("Client-Server Connection Thread");
 
 		private String type;
 

@@ -7,12 +7,13 @@ import java.net.SocketException;
 import java.nio.file.Files;
 
 /**
- * @author Group 5
+ * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * Client to Server connection handler, any file transfer to and from 
- * clients is handled by this thread until file transfer is complete 
- * then it will terminate. 
+ * 	Client to Server connection handler, any file transfer to and from 
+ * client threads is handled by this server thread instance until file 
+ * transfer is complete, then it will terminate. 
+ * 
  */
 public class ServerConnectionHandler extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
@@ -72,7 +73,7 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 		}
 
 		int port = receivePacket.getPort();
-		printable.PrintReceivedPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.MAIN_SERVER, receivePacket.getAddress(),
+		printable.PrintReceivedPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.SERVER, receivePacket.getAddress(),
 				receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 
 		// File process here --> This only currently works for test.txt file
@@ -106,7 +107,7 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 
 		// Send to client 
 		sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 42);
-		printable.PrintSendingPackets(Constants.ServerType.SECONDARY_SERVER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
+		printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
 				sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 
 		try {

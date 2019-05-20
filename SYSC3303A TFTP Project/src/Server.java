@@ -6,10 +6,14 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 /**
- * @author Group 5
+ * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * Main Server-side Algorithm
+ * 	Receives packets from both Error Simulator and Client,
+ * creates a new client-server thread connection to handle request.
+ * When it is completed the the client-server thread connection is 
+ * terminated until a new connection is made. 
+ * 
  */
 public class Server extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
@@ -31,7 +35,7 @@ public class Server extends Thread implements Runnable{
 			sendSocket = new DatagramSocket();
 			receiveSocket = new DatagramSocket(69, InetAddress.getLocalHost());
 		} catch (SocketException e){
-			print("MAIN SERVER ERROR OCCURED: " + e.getMessage());
+			print("Server: Socket Error Occured --> " + e.getMessage());
 		}
 	}
 	
@@ -42,7 +46,7 @@ public class Server extends Thread implements Runnable{
 		try {
 			createSecondaryServerInstance();
 		} catch (Exception e) {
-			print("Main Server: Thread Error Occured -> " + e.getStackTrace().toString());
+			print("Server: Thread Error Occured -> " + e.getStackTrace().toString());
 		}
 	}
 	
@@ -56,15 +60,15 @@ public class Server extends Thread implements Runnable{
 		
 		for(;;) {
 			receiveSocket.receive(receivePacket);
-			printable.PrintReceivedPackets(Constants.ServerType.MAIN_SERVER, Constants.ServerType.HOST, receivePacket.getAddress(),
+			printable.PrintReceivedPackets(Constants.ServerType.SERVER, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(),
 					receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 			
 			String msg = new String(receivePacket.getData());
 			if (msg.equals("CloseServerThreads")) {
-				print("[Main Server]: Closing all sockets and thread instances ...");
+				print("[Server]: Closing all sockets and thread instances ...");
 				receiveSocket.close();
 				Thread.currentThread().interrupt();
-				print("[Main Server]: Server thread instance closed.");
+				print("[Server]: Server thread instance closed.");
 				break;
 			}
 			
@@ -74,11 +78,11 @@ public class Server extends Thread implements Runnable{
 			
 			// Create a new temporary Secondary Server Thread with the inherited console output mode and start it 
 			ServerConnectionHandler serverConnectionHandler = new ServerConnectionHandler(mode, tempSocket);
-			print("[Main Server]: Created a new secondary server instance at port --> " + tempSocket.getLocalPort());
+			print("[Server]: Created a new secondary server instance at port --> " + tempSocket.getLocalPort());
 			serverConnectionHandler.start();
 			
 			// Send the new packet to Secondary Server 
-			printable.PrintSendingPackets(Constants.ServerType.MAIN_SERVER, Constants.ServerType.SECONDARY_SERVER,
+			printable.PrintSendingPackets(Constants.ServerType.SERVER, Constants.ServerType.SERVER_CONNECTION_HANDLER,
 					sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 			sendSocket.send(sendPacket);
 		}

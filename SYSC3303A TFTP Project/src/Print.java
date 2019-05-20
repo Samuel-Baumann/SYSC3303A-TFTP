@@ -1,10 +1,13 @@
 import java.net.InetAddress;
 
 /**
- * @author Group 5
+ * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * Print helper class
+ * 	Print helper class used for printing verbose
+ * packet information for Client, Error Simulation,
+ * and Server thread instances.
+ * 
  */
 public class Print {
 	private Constants.ModeType mode;
