@@ -19,6 +19,6 @@ Note: This iteration also includes Iteration 0.
 ### Breakdown:
 * Code - Sirak (adapted from Sirak's Assignment 1 and further expanded to include file transfer + helper classes)
 * Supporting Documentation, UML and Use Case: Sam
-* State Machine diagrams and supplementary work: Ruchi
+* State Machine diagrams and added verbose/quit user input code to Client: Ruchi
 ### Setup:
 To run our first iteration, a user must have an instance of the client and server on the same machine, and must also run the connection handler and error simulator if they wish to run tests. Once all of these consoles are open and the threads are running, follow the steps outlined in the Client's main() function to select your mode, file locations and other customizable options. To quit, again follow the instruction in Client to send a shutdown command to the system.
