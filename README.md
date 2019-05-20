@@ -2,7 +2,7 @@
   A file transfer system based on the TFTP specification (RFC 1350). The TFTP program will contain three programs: Client, Error Simulation, and Server. The goal of the project is to be able to run all of the programs separately and transfer files from or to Client and Server. 
  
 ## Members
-  Sirak Ahferom   - 101030433
+  Sirak Berhane   - 101030433
   
   Samuel Baumann  - 101033635
   
