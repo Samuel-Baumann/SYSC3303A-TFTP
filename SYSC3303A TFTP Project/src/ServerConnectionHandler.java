@@ -1,4 +1,6 @@
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -10,10 +12,9 @@ import java.nio.file.Files;
  * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * 	Client to Server connection handler, any file transfer to and from 
+ * Client to Server connection handler, any file transfer to and from 
  * client threads is handled by this server thread instance until file 
  * transfer is complete, then it will terminate. 
- * 
  */
 public class ServerConnectionHandler extends Thread implements Runnable{
 	private DatagramPacket sendPacket, receivePacket;
@@ -26,9 +27,10 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 	private static byte blockNum = 0x00;
 
 	/**
+	 * Client-Server constructor
 	 * 
-	 * @param mode
-	 * @param receiveSocket
+	 * @param mode type of console output mode (i.e. Verbose or Quiet)
+	 * @param receiveSocket server thread socket data
 	 */
 	public ServerConnectionHandler(Constants.ModeType mode, DatagramSocket receiveSocket) {
 		this.mode = mode;
@@ -45,7 +47,7 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 	}
 
 	/**
-	 * 
+	 * Client-Server thread runnable
 	 */
 	public void run() {
 		try {
@@ -56,8 +58,10 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 	}
 
 	/**
+	 * Send and receive loop between temporary server thread and client, terminates
+	 * after connection is timeout or client is finished transferring.
 	 * 
-	 * @throws Exception
+	 * @throws Exception if any errors is caught by the thread 
 	 */
 	public void sendReceivePackets() throws Exception {
 		// Receive and parse the packet that was sent from main server.
@@ -76,7 +80,7 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 		printable.PrintReceivedPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.SERVER, receivePacket.getAddress(),
 				receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 
-		// File process here --> This only currently works for test.txt file
+		// File process here
 		file = find(new File("Server"), new String ("test.txt"));
 
 		if (errorFound == true) {
@@ -89,26 +93,42 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 			packetResponse[1] = 3;
 			packetResponse[2] = blockNum;
 			packetResponse[3] = blockNum;
+
 			try {
 				System.arraycopy(Files.readAllBytes(file.toPath()), 0, packetResponse, 4, Files.readAllBytes(file.toPath()).length);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			blockNum++;
+
+			// Send to client 
+			sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 42);
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
+					sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 		} else if(dataRecieved[1] == Constants.PacketByte.WRQ.getPacketByteType()) {
-			packetResponse[0] = 0;
-			packetResponse[1] = 4;
-			packetResponse[2] = blockNum;
-			packetResponse[3] = blockNum;
-			blockNum++;
+			if (dataRecieved[1] == Constants.PacketByte.DATA.getPacketByteType()) {
+				print("[Client-Server Connection Thread]: Reading file \n");
+				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+				out.write(packetResponse, 0, packetResponse.length);
+				out.close();
+
+				sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 42);
+				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
+						sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
+			} else {
+				packetResponse[0] = 0;
+				packetResponse[1] = 4;
+				packetResponse[2] = blockNum;
+				packetResponse[3] = blockNum;
+				blockNum++;
+
+				sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 42);
+				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
+						sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
+			}	
 		} else {
 			throw new Exception("InvalidPacketFormatException");
 		}
-
-		// Send to client 
-		sendPacket = new DatagramPacket(packetResponse, packetResponse.length, address, 42);
-		printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(),
-				sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
 
 		try {
 			sendSocket.send(sendPacket);
@@ -122,7 +142,9 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 	}
 
 	/**
-	 * Recursive file finder.
+	 * Recursive file finder, from relative path that the file 
+	 * might exist and the actual filename. Returns absolute
+	 * file path if the file exists.
 	 * 
 	 * @param root the default root folder that the file is located in
 	 * @param filename filename to be found
@@ -150,8 +172,9 @@ public class ServerConnectionHandler extends Thread implements Runnable{
 	}
 
 	/**
+	 * General verbose print funtion for non-static methods.
 	 * 
-	 * @param printable
+	 * @param printable string output value
 	 */
 	private void print(String printable) {
 		if (mode == Constants.ModeType.VERBOSE) {

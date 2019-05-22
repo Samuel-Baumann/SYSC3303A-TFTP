@@ -2,8 +2,7 @@
  * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * Common constants used by Client, Error Simulator, and Server
- * 
+ * Common constants used by Client, Error Simulator, and Server.
  */
 public class Constants {
 	public enum PacketString {

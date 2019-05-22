@@ -4,8 +4,8 @@ import java.net.InetAddress;
  * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * 	Print helper class used for printing verbose
- * packet information for Client, Error Simulation,
+ * Print helper class used for printing verbose
+ * packet information for Client, Error Simulator,
  * and Server thread instances.
  * 
  */
@@ -13,21 +13,23 @@ public class Print {
 	private Constants.ModeType mode;
 
 	/**
+	 * Print constructor 
 	 * 
-	 * @param mode
+	 * @param mode type of console output mode (i.e. Verbose or Quiet)
 	 */
 	public Print(Constants.ModeType mode) {
 		this.mode = mode;
 	}
 
 	/**
+	 * Prints packet information from sender.
 	 * 
-	 * @param serverSender
-	 * @param serverReciever
-	 * @param address
-	 * @param port
-	 * @param length
-	 * @param data
+	 * @param serverSender enum name of sender
+	 * @param serverReciever enum name of receiver
+	 * @param address IP address of the sender
+	 * @param port Port ID from the sender
+	 * @param length packet length
+	 * @param data packet data
 	 */
 	public void PrintSendingPackets(Constants.ServerType serverSender, Constants.ServerType serverReciever, InetAddress address, int port, int length, byte[] data) {
 		if (mode != Constants.ModeType.QUIET) {
@@ -46,13 +48,14 @@ public class Print {
 	}
 
 	/**
+	 * Prints packet information to receiver.
 	 * 
-	 * @param serverReciever
-	 * @param serverSender
-	 * @param address
-	 * @param port
-	 * @param length
-	 * @param data
+	 * @param serverReciever enum name of receiver
+	 * @param serverSender enum name of sender
+	 * @param address IP address of the sender
+	 * @param port Port ID from the sender
+	 * @param length packet length
+	 * @param data packet data
 	 */
 	public void PrintReceivedPackets(Constants.ServerType serverReciever, Constants.ServerType serverSender, InetAddress address, int port, int length, byte[] data) {
 		if (mode != Constants.ModeType.QUIET) {
@@ -71,9 +74,10 @@ public class Print {
 	}
 
 	/**
+	 * Return string code of packet type
 	 * 
-	 * @param data
-	 * @return
+	 * @param data packet data
+	 * @return string packet type code
 	 */
 	private String getPacketType(byte[] data) {
 		String packetType = "";

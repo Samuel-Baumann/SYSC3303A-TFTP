@@ -6,14 +6,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 /**
- * @author Team 05 (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
+ * @author Team 05 - (Sirak Berhane, Samuel Baumann, Ruchi Bhatia)
  * @version 5/21/2018 (Iteration #1)
  * 
- * Client-side Algorithm
- * 
+ * Client thread, establishes a server connection for UDP file transfer (TFTP).
  */
 public class Client extends Thread implements Runnable{	
 	private DatagramPacket sendPacket, receivePacket;		// Packet data is assigned when sending/receiving from server
@@ -32,7 +32,7 @@ public class Client extends Thread implements Runnable{
 	private static InetAddress serverAddress;				// Convert user response to InetAddress type and assign it to this variable
 	private static String userClientDirectory;				// Read/Write file into/from this directory
 	private static String optionSelected = "";				// Request type (RRQ or WRQ)
-	private static File file;								// File path if file is found
+	private static File fileRead, fileWrite, file;			// File path if file is found
 	private static boolean errorFound = false;				// If error occured while finding file
 
 	/**
@@ -49,7 +49,7 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
-	 * 
+	 * Client thread runnable.
 	 */
 	public void run() {
 		try {
@@ -63,8 +63,9 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
+	 * Send and receive loop from and to Server.
 	 * 
-	 * @throws Exception
+	 * @throws Exception if any errors is caught by the thread 
 	 */
 	public void sendReceivePackets() throws Exception {
 		String mode = "";
@@ -78,37 +79,41 @@ public class Client extends Thread implements Runnable{
 				msg[0] = Constants.PacketByte.ZERO.getPacketByteType();
 				if (typeOfRequest.equals("RRQ")) {
 					msg[1] = Constants.PacketByte.RRQ.getPacketByteType();
+
+					System.arraycopy(data,0,msg,2,data.length);
+					msg[filename.getBytes().length + 2] = Constants.PacketByte.ZERO.getPacketByteType();
+
+					// Convert mode from String to Byte[] and add it to message, then add 0 byte.
+					mode = "netascii";
+					byte[] modeArray = mode.getBytes();
+					System.arraycopy(modeArray, 0, msg, filename.getBytes().length + 3, modeArray.length);
+					int sizeOfMsg = filename.getBytes().length + modeArray.length + 4;
+					msg[sizeOfMsg - 1] = Constants.PacketByte.ZERO.getPacketByteType();
+
+					if (userPortPrefence == Constants.ClientPacketSendType.NORMAL.getPortID()) {
+						sendPacket = new DatagramPacket(msg, sizeOfMsg, InetAddress.getLocalHost(), userPortPrefence);
+					} else {
+						sendPacket = new DatagramPacket(msg, sizeOfMsg, serverAddress, userPortPrefence);
+					}	
 				} else if (typeOfRequest.equals("WRQ")) {
 					msg[1] = Constants.PacketByte.WRQ.getPacketByteType();
-				} else {
-					msg = new String("CloseServerThreads").getBytes();
-					sendPacket.setData(msg);
-					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(),
-							sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
-					try {
-						sendReceiveSocket.send(sendPacket);
-					} catch (IOException e) {
-						print("Client: Error occured while sending packet ==> Stack Trace "  + e.getStackTrace().toString());
-						System.exit(1);
+
+					System.arraycopy(data,0,msg,2,data.length);
+					msg[filename.getBytes().length + 2] = Constants.PacketByte.ZERO.getPacketByteType();
+
+					// Convert mode from String to Byte[] and add it to message, then add 0 byte.
+					mode = "netascii";
+					byte[] modeArray = mode.getBytes();
+					System.arraycopy(modeArray, 0, msg, filename.getBytes().length + 3, modeArray.length);
+					int sizeOfMsg = filename.getBytes().length + modeArray.length + 4;
+					msg[sizeOfMsg - 1] = Constants.PacketByte.ZERO.getPacketByteType();
+
+					if (userPortPrefence == Constants.ClientPacketSendType.NORMAL.getPortID()) {
+						sendPacket = new DatagramPacket(msg, sizeOfMsg, serverAddress, userPortPrefence);
+					} else {
+						sendPacket = new DatagramPacket(msg, sizeOfMsg, serverAddress, userPortPrefence);
 					}
-					Thread.currentThread().interrupt();
-					break;
-				}
-
-				System.arraycopy(data,0,msg,2,data.length);
-				msg[filename.getBytes().length + 2] = Constants.PacketByte.ZERO.getPacketByteType();
-
-				// Convert mode from String to Byte[] and add it to message, then add 0 byte.
-				mode = "netascii";
-				byte[] modeArray = mode.getBytes();
-				System.arraycopy(modeArray, 0, msg, filename.getBytes().length + 3, modeArray.length);
-				int sizeOfMsg = filename.getBytes().length + modeArray.length + 4;
-				msg[sizeOfMsg - 1] = Constants.PacketByte.ZERO.getPacketByteType();
-				if (userPortPrefence == Constants.ClientPacketSendType.NORMAL.getPortID()) {
-					sendPacket = new DatagramPacket(msg, sizeOfMsg, serverAddress, userPortPrefence);
-				} else {
-					sendPacket = new DatagramPacket(msg, sizeOfMsg, InetAddress.getLocalHost(), userPortPrefence);
-				}	
+				}			
 			}
 
 			// Send the packet to Error Simulator or Main Server depending on mode
@@ -145,20 +150,51 @@ public class Client extends Thread implements Runnable{
 			printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER_CONNECTION_HANDLER, receivePacket.getAddress(),
 					receivePacket.getPort(), receivePacket.getLength(), receivePacket.getData());
 
-			file = find(new File(userClientDirectory), new String (filename));
-			
-			if (errorFound == true) {
-				throw new Exception("FileNotFoundException");	
-			}
-			
 			if (typeOfRequest.equals("RRQ")) {
+				fileRead = find(new File(userClientDirectory), new String (filename));
+				if (errorFound == true) {
+					throw new Exception("FileNotFoundException");	
+				}
 				print("[Client]: Reading file \n");
-				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(fileRead));
 				out.write(receivePacket.getData(), 0, receivePacket.getLength());
 				out.close();
-			} else {
+			} 
+			
+			if (typeOfRequest.equals("WRQ")) {
 				print("[Client]: Writing file \n");
-				// Read file from Client directory + filename --> send to server
+
+				fileWrite = find(new File(userClientDirectory), new String (filename));
+
+				if (errorFound == true) {
+					throw new Exception("FileNotFoundException");
+				}
+
+				byte[] packetData = new byte[Files.readAllBytes(fileWrite.toPath()).length+2];
+				packetData[0] = 0;
+				packetData[1] = 3;
+				try {
+					System.arraycopy(Files.readAllBytes(file.toPath()), 0, packetData, 2, Files.readAllBytes(file.toPath()).length);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				sendPacket = new DatagramPacket(packetData, packetData.length, serverAddress, userPortPrefence);
+				try {
+					sendReceiveSocket.send(sendPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+
+				// Send the packet to Error Simulator or Main Server depending on mode
+				if (userPortPrefence == Constants.ClientPacketSendType.NORMAL.getPortID()) {
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(),
+							sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
+				} else {
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(),
+							sendPacket.getPort(), sendPacket.getLength(), sendPacket.getData());
+				}
 			}
 		} while (!(requestedThreadClosing == true));
 		print("Client: Closing old sockets ...");
@@ -168,8 +204,9 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
+	 * Request the user for read or write request.
 	 * 
-	 * @throws IOException
+	 * @throws IOException if input is invalid format
 	 */
 	private static void getRequestTypeFromUser() throws IOException {		
 		do {
@@ -192,8 +229,9 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
+	 * Request the user for file name
 	 * 
-	 * @throws IOException
+	 * @throws IOException if input is invalid format
 	 */
 	private static void getFileNameFromUser() throws IOException{
 		System.out.println("Enter [1] Default File name on Server (i.e. test.txt) [2] Custom File name on Server: \n");
@@ -217,7 +255,9 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
-	 * Recursive file finder.
+	 * Recursive file finder, from relative path that the file 
+	 * might exist and the actual filename. Returns absolute
+	 * file path if the file exists.
 	 * 
 	 * @param root the default root folder that the file is located in
 	 * @param filename filename to be found
@@ -245,8 +285,9 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
+	 * General verbose print funtion for non-static methods.
 	 * 
-	 * @param printable
+	 * @param printable string output value
 	 */
 	private void print(String printable) {
 		if (mode == Constants.ModeType.VERBOSE) {
@@ -255,16 +296,18 @@ public class Client extends Thread implements Runnable{
 	}
 
 	/**
+	 * Getter for server IP address.
 	 * 
-	 * @return 
+	 * @return server IP address
 	 */
 	public static synchronized InetAddress getServerAddress() {
 		return serverAddress;
 	}
 
 	/**
+	 * Setter for server IP address.
 	 * 
-	 * @param serverAddress
+	 * @param serverAddress the value to be set from user input
 	 */
 	public static synchronized void setServerAddress(InetAddress serverAddress) {
 		Client.serverAddress = serverAddress;
