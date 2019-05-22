@@ -21,9 +21,6 @@ Note: This iteration also includes Iteration 0.
 * Supporting Documentation, UML and Use Case: Sam
 * State Machine diagrams and added verbose/quit user input code to Client: Ruchi
 ### Diagram:
-## Class Diagram
 ![alt text](https://github.com/sirakberhane/SYSC3303A-TFTP/blob/master/Diagrams/Class%20Diagram%20-%20Iteration%20%231.png)
-## State Diagram
-![alt text]()
 ### Setup:
 To run our first iteration, a user must have an instance of the client and server on the same machine, and must also run the connection handler and error simulator if they wish to run tests. Once all of these consoles are open and the threads are running, follow the steps outlined in the Client's main() function to select your mode, file locations and other customizable options. To quit, again follow the instruction in Client to send a shutdown command to the system.
