@@ -1,13 +1,15 @@
-
-// TFTPClient.java
-// This class is the client side for a very simple assignment based on TFTP on
-// UDP/IP. The client uses one port and sends a read or write request and gets 
-// the appropriate response from the server.  No actual file transfer takes place.   
-
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
 
+/**
+ * @author Sirak Berhane, Ruchi Bhatia, Henri Umba
+ * 
+ * TFTPClient.java
+ * This class is the client side for a very simple assignment based on TFTP on
+ * UDP/IP. The client uses one port and sends a read or write request and gets 
+ * the appropriate response from the server.  No actual file transfer takes place. 
+ */
 public class Client {
 
 	private DatagramPacket sendPacket, receivePacket;
@@ -397,7 +399,7 @@ public class Client {
 				long size = sendingFile.length();
 				int blockNum = 1;
 				FileInputStream fis = null;
-				byte[] fileArray = new byte[(int) sendingFile.length()];
+				byte[] fileArray = new byte[(int) size];
 				try {
 					fis = new FileInputStream(sendingFile);
 					fis.read(fileArray);

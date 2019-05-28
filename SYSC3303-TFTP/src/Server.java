@@ -1,8 +1,17 @@
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.nio.file.Files;
 
+/**
+ * @author Sirak Berhane, Ruchi Bhatia, Henri Umba
+ *	
+ * Server.java
+ */
 public class Server{
     DatagramSocket receiveSocket;
     DatagramPacket receivePacket;
@@ -160,7 +169,7 @@ class DealWithClientRequest extends Thread{
         // }
 
         int blockNum = 1;
-        int index = 0;
+        //int index = 0;
         while((blockNum-1)*512 < wholeBlock.length){
             byte [] msg = new byte [516];
             int ind = 0;
@@ -215,7 +224,7 @@ class DealWithClientRequest extends Thread{
 
     public void communicateWriteRequest(String filename){
         byte [] receivedBytes = new byte[65535 * 512];
-        int receivedBytesIndex = 0;
+        //int receivedBytesIndex = 0;
         int blockNum = 0;
         int blockSize = 1000000;
 
