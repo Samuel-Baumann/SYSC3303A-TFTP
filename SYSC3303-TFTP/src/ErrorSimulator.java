@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.Scanner;
 
 /** 
  * @author Sirak Berhane, Ruchi Bhatia, Henri Umba
@@ -19,7 +20,8 @@ public class ErrorSimulator {
 	// UDP datagram packets and sockets used to send / receive
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket, sendReceiveSocket;
-
+	private static Integer modeType;
+	
 	public ErrorSimulator()
 	{
 		try {
@@ -39,7 +41,7 @@ public class ErrorSimulator {
 
 	public void passOnTFTP(){
 		byte[] data;
-		int clientPort, j=0, len;
+		int clientPort, serverThreadPort=-1, j=0, len;
 
 		for(;;) { // loop forever
 			// Construct a DatagramPacket for receiving packets up
@@ -61,19 +63,20 @@ public class ErrorSimulator {
 			System.out.println("Simulator: Packet received:");
 			System.out.println("From host: " + receivePacket.getAddress());
 			clientPort = receivePacket.getPort();
-			System.out.println("Host port: " + clientPort);
+			System.out.println("Client port: " + clientPort);
 			len = receivePacket.getLength();
 			System.out.println("Length: " + len);
 			System.out.println("Containing: " );
 
 			// print the bytes
-			for (j=0;j<len;j++) {
-				System.out.println("byte " + j + " " + data[j]);
-			}
+//			for (j=0;j<len;j++) {
+//				System.out.println("byte " + j + " " + data[j]);
+//			}
+			System.out.println(new String(receivePacket.getData(),2,len-2));
 
 			// Form a String from the byte array, and print the string.
-			String received = new String(data,0,len);
-			System.out.println(received);
+			//String received = new String(data,0,len);
+			//System.out.println(received);
 
 			// Now pass it on to the server (to port 69)
 			// Construct a datagram packet that is to be sent to a specified port
@@ -89,6 +92,7 @@ public class ErrorSimulator {
 			//     address of the local host.
 			//  69 - the destination port number on the destination host.
 
+			// TODO: Server to Client port
 			sendPacket = new DatagramPacket(data, len,
 					receivePacket.getAddress(), 69);
 
@@ -196,6 +200,29 @@ public class ErrorSimulator {
 	}
 
 	public static void main(String args[]){
+//		Scanner in = new Scanner(System.in);
+//		
+//		do {
+//			System.out.println("Enter Error Simulation mode ([0]: Normal Mode, [1]: Lost Packet, [2]: Delay Packet, [3]: Duplicate Packet): ");
+//			in.nextLine();
+//			if (in.nextInt() == 0) { // [0]: Normal Mode --> Pass through
+//				System.out.println("Mode Selected: " + in.nextInt());
+//				modeType = 0;
+//			} else if (in.nextInt() == 1) { // [1]: Lost Packet
+//				System.out.println("Mode Selected: " + in.nextInt());
+//				modeType = 1;
+//			} else if (in.nextInt() == 2) { // [2]: Delay Packet
+//				System.out.println("Mode Selected: " + in.nextInt());
+//				modeType = 2;
+//			} else if (in.nextInt() == 3) { // [3]: Duplicate Packet
+//				System.out.println("Mode Selected: " + in.nextInt());
+//				modeType = 3;
+//			} else {
+//				modeType = null;
+//			}
+//		} while (modeType != null);
+//		in.close();
+		
 		ErrorSimulator sim = new ErrorSimulator();
 		sim.passOnTFTP();
 	}
