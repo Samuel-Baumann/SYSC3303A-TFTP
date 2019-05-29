@@ -39,7 +39,7 @@ Note: Group 5 has merged its remaining 3 members with Group 9's remaining 2 memb
 * UML Sequence Diagram
 * Updated Code for each component + supplementary classes & constants
 ### Breakdown:
-* Code - Sirak, Henri and Ruchi (modified with group 9's iteration 1 + addition of testing in Error simulator)
+* Code - Sirak, Henri (modified with group 9's iteration 1 + addition of testing in Error simulator)
 * Supporting Documentation, UML Class and Use Case: Sam
 * UML Sequence and State Machine Diagrams: Gen
 ### Setup:
