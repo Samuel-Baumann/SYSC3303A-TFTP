@@ -42,10 +42,15 @@ public class ErrorSimulator {
 	public void passOnTFTP(){
 		byte[] data;
 		int clientPort, serverThreadPort=-1, len;
+		
+		boolean send = true;
+		int dup = 1;
+		int info;
 
 		for(;;) { // loop forever
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
+
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -67,28 +72,94 @@ public class ErrorSimulator {
 			System.out.println("Length: " + len);
 			System.out.println("Containing: " +new String(receivePacket.getData(),2,len-2));
 
-			// TODO: Server to Client port
-			sendPacket = new DatagramPacket(data, len,
-					receivePacket.getAddress(), (serverThreadPort==-1)?69:serverThreadPort);
-
-			System.out.println("Simulator: sending packet.");
-			System.out.println("To SERVER: " + sendPacket.getAddress());
-			System.out.println("Destination host port: " + sendPacket.getPort());
-			len = sendPacket.getLength();
-			System.out.println("Length: " + len);
-			System.out.println("Containing: ");
-			System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
-
-			// Send the datagram packet to the server via the send/receive socket.
-			try {
-				sendReceiveSocket.send(sendPacket);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
+			
+			
+			
+			if(mode != 6) {
+				System.out.println("***************WORK******************");
+				switch(mode) {
+				case 0:
+					info = receivePacket.getData()[1];
+					if(info == 3) {
+						System.out.println("Losing Packet from Client");
+						send = false;
+						dup = 1;
+					}
+					break;
+				case 1:
+					info = receivePacket.getData()[1];
+					if(info == 3) {
+						System.out.println("Delaying Packet from Client");
+						send = true;
+						dup = 1;
+						try {Thread.sleep(5000);}catch(InterruptedException ie) {ie.printStackTrace();}
+					}
+					break;
+				case 2:
+					info = receivePacket.getData()[1];
+					if(info == 3) {
+						System.out.println("Duplicate Packet from Client");
+						send = true;
+						dup = 2;
+					}
+					break;
+				case 3:
+					info = receivePacket.getData()[1];
+					if(info == 4) {
+						System.out.println("Losing Packet from Client");
+						send = false;
+						dup = 1;
+					}
+					break;
+				case 4:
+					info = receivePacket.getData()[1];
+					if(info == 4) {
+						System.out.println("Delaying Packet from Client");
+						send = true;
+						dup = 1;
+						try {Thread.sleep(5000);}catch(InterruptedException ie) {ie.printStackTrace();}
+					}
+					break;
+				case 5:
+					info = receivePacket.getData()[1];
+					if(info == 4) {
+						System.out.println("Duplicate Packet from Client");
+						send = true;
+						dup = 2;
+					}
+					break;
+				}
 			}
+			
+			for(int x = 0; x<dup; x++) {
+				if(send) {
+					sendPacket = new DatagramPacket(data, len,
+							receivePacket.getAddress(), (serverThreadPort==-1)?69:serverThreadPort);
+
+					System.out.println("Simulator: sending packet.");
+					System.out.println("To SERVER: " + sendPacket.getAddress());
+					System.out.println("Destination host port: " + sendPacket.getPort());
+					len = sendPacket.getLength();
+					System.out.println("Length: " + len);
+					System.out.println("Containing: ");
+					System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
+
+					// Send the datagram packet to the server via the send/receive socket.
+
+					try {
+						sendReceiveSocket.send(sendPacket);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+				}
+			}
+			
+			send = true;
 
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
+
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -150,16 +221,21 @@ public class ErrorSimulator {
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
 		int mode;
+
 		System.out.println("Pick a mode: "
-				+ "\n[0]Lost data Request"
-				+ "\n[1]Delay data Request"
-				+ "\n[2]Duplicate data Request"
-				+ "\n[3]Lost ack Request"
-				+ "\n[4]Delay ack Request"
-				+ "\n[5]Duplicate ack Request"
+				+ "\n[0]Lost data"
+				+ "\n[1]Delay data"
+				+ "\n[2]Duplicate data"
+				+ "\n[3]Lost ack"
+				+ "\n[4]Delay ack"
+				+ "\n[5]Duplicate ack"
 				+ "\n[6]Normal Mode\n");
+		
 		mode = input.nextInt();
+		
+		
 		input.close();
+
 		ErrorSimulator sim = new ErrorSimulator(mode);
 		sim.passOnTFTP();
 	}
