@@ -44,5 +44,5 @@ Note: Group 5 has merged its remaining 3 members with Group 9's remaining 2 memb
 * UML Sequence and State Machine Diagrams: Gen
 ### Setup:
 Running the second iteration is similar to the first in that a user must have an instance of the client, error simulator and server open on the same machine, and run the connection handler to log testing, a crucial part of iteration 2. In this case however, though the client is still responsible for accepting user input to select mode, file locations and other options, the Error simluator can be customized to intentionall delay, duplicate or lose packets in order to record how the server behaves when presented with irregular messages.
-### Known issues:
-At present, iteration 2 contains bugs that prevent the project from functioning fully. First, when the user sends a request from the client, the server will acknowledge and generate a response as normal, but the server will resend the request upon receiving the response, looping until manually shut down. In addition, because of this error, the project must be terminated from the console rather than from a shutdown command. These issues have delayed the implementation of error testing and simulation, and are being reveiewed.
+### Known issue
+Server can't shutdown by custom command.
