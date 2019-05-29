@@ -183,36 +183,45 @@ class DealWithClientRequest extends Thread{
                 System.arraycopy(wholeBlock, (blockNum-1)*512, msg, 4, 512);
                 sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), receivePacket.getPort());
             }else{
-                System.arraycopy(wholeBlock, (blockNum-1)*512, msg, 4, wholeBlock.length % 512);
-                sendPacket = new DatagramPacket(msg, wholeBlock.length % 512, receivePacket.getAddress(), receivePacket.getPort());
+            	System.arraycopy(wholeBlock, (blockNum-1)*512, msg, 4, wholeBlock.length % 512);
+            	sendPacket = new DatagramPacket(msg, wholeBlock.length % 512, receivePacket.getAddress(), receivePacket.getPort());
             }
-                
+
             System.out.println( "Creating DATA Packet to Send"+
-                                "\nClient Address: "+ sendPacket.getAddress()+
-                                "\nClient Port: "+ sendPacket.getPort()+
-                                "\nBlock Number: "+ blockNum+
-                                "\nCONTAINS: "+new String(sendPacket.getData(), 4, ((blockNum)*512<wholeBlock.length)?512:wholeBlock.length % 512));
+            		"\nClient Address: "+ sendPacket.getAddress()+
+            		"\nClient Port: "+ sendPacket.getPort()+
+            		"\nBlock Number: "+ blockNum+
+            		"\nCONTAINS: "+new String(sendPacket.getData(), 4, ((blockNum)*512<wholeBlock.length)?512:wholeBlock.length % 512));
 
-            try{
-                sendReceiveSocket.send(sendPacket);
-            }catch(IOException ioe){
-                ioe.printStackTrace();
-                System.exit(1);
+            while(true) {
+            	boolean temp = true;
+            	try{
+            		sendReceiveSocket.send(sendPacket);
+            	}catch(IOException ioe){
+            		ioe.printStackTrace();
+            		System.exit(1);
+            	}
+
+            	try{
+            		sendReceiveSocket.setSoTimeout(5000);
+            		sendReceiveSocket.receive(receivePacket);
+            	}catch(IOException ioe){
+            		//ioe.printStackTrace();
+            		System.out.println("Sending another Packet...");
+            		temp = false;
+            		//System.exit(1);
+            	}
+
+            	if(temp) { break;}
             }
 
-            try{
-                sendReceiveSocket.receive(receivePacket);
-            }catch(IOException ioe){
-                ioe.printStackTrace();
-                System.exit(1);
-            }
 
             int clientBlockNum = (256*receivePacket.getData()[2])+receivePacket.getData()[3];
             System.out.println(clientBlockNum);
 
             if(clientBlockNum != blockNum){
-                System.out.println(new Exception("Client & Server block number missmatch!"));
-                System.exit(1);
+            	System.out.println(new Exception("Client & Server block number missmatch!"));
+            	System.exit(1);
             }
 
             //System.out.println("******New Packet Recieved*****");
