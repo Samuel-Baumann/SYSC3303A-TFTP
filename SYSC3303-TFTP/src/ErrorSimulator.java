@@ -17,10 +17,9 @@ import java.util.Scanner;
  */
 public class ErrorSimulator {
 
-	// UDP datagram packets and sockets used to send / receive
+	// UDP Data gram packets and sockets used to send / receive
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket, sendReceiveSocket;
-	private static Integer modeType;
 	
 	public ErrorSimulator()
 	{
@@ -41,13 +40,13 @@ public class ErrorSimulator {
 
 	public void passOnTFTP(){
 		byte[] data;
-		int clientPort, serverThreadPort=-1, j=0, len;
+		int clientPort, serverThreadPort=-1, len;
 
 		for(;;) { // loop forever
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
 
-			data = new byte[100];
+			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
 			System.out.println("Simulator: Waiting for packet.");
@@ -61,50 +60,24 @@ public class ErrorSimulator {
 
 			// Process the received datagram.
 			System.out.println("Simulator: Packet received:");
-			System.out.println("From host: " + receivePacket.getAddress());
+			System.out.println("From CLIENT: " + receivePacket.getAddress());
 			clientPort = receivePacket.getPort();
 			System.out.println("Client port: " + clientPort);
 			len = receivePacket.getLength();
 			System.out.println("Length: " + len);
-			System.out.println("Containing: " );
-
-			// print the bytes
-//			for (j=0;j<len;j++) {
-//				System.out.println("byte " + j + " " + data[j]);
-//			}
-			System.out.println(new String(receivePacket.getData(),2,len-2));
-
-			// Form a String from the byte array, and print the string.
-			//String received = new String(data,0,len);
-			//System.out.println(received);
-
-			// Now pass it on to the server (to port 69)
-			// Construct a datagram packet that is to be sent to a specified port
-			// on a specified host.
-			// The arguments are:
-			//  msg - the message contained in the packet (the byte array)
-			//  the length we care about - k+1
-			//  InetAddress.getLocalHost() - the Internet address of the
-			//     destination host.
-			//     In this example, we want the destination to be the same as
-			//     the source (i.e., we want to run the client and server on the
-			//     same computer). InetAddress.getLocalHost() returns the Internet
-			//     address of the local host.
-			//  69 - the destination port number on the destination host.
+			System.out.println("Containing: " +new String(receivePacket.getData(),2,len-2));
 
 			// TODO: Server to Client port
 			sendPacket = new DatagramPacket(data, len,
-					receivePacket.getAddress(), 69);
+					receivePacket.getAddress(), (serverThreadPort==-1)?69:serverThreadPort);
 
 			System.out.println("Simulator: sending packet.");
-			System.out.println("To host: " + sendPacket.getAddress());
+			System.out.println("To SERVER: " + sendPacket.getAddress());
 			System.out.println("Destination host port: " + sendPacket.getPort());
 			len = sendPacket.getLength();
 			System.out.println("Length: " + len);
 			System.out.println("Containing: ");
-			for (j=0;j<len;j++) {
-				System.out.println("byte " + j + " " + data[j]);
-			}
+			System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
 
 			// Send the datagram packet to the server via the send/receive socket.
 
@@ -118,7 +91,7 @@ public class ErrorSimulator {
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
 
-			data = new byte[100];
+			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
 			System.out.println("Simulator: Waiting for packet.");
@@ -132,45 +105,26 @@ public class ErrorSimulator {
 
 			// Process the received datagram.
 			System.out.println("Simulator: Packet received:");
-			System.out.println("From host: " + receivePacket.getAddress());
+			System.out.println("From SERVER: " + receivePacket.getAddress());
 			System.out.println("Host port: " + receivePacket.getPort());
 			len = receivePacket.getLength();
 			System.out.println("Length: " + len);
 			System.out.println("Containing: ");
-			for (j=0;j<len;j++) {
-				System.out.println("byte " + j + " " + data[j]);
-			}
-
-			// Construct a datagram packet that is to be sent to a specified port
-			// on a specified host.
-			// The arguments are:
-			//  data - the packet data (a byte array). This is the response.
-			//  receivePacket.getLength() - the length of the packet data.
-			//     This is the length of the msg we just created.
-			//  receivePacket.getAddress() - the Internet address of the
-			//     destination host. Since we want to send a packet back to the
-			//     client, we extract the address of the machine where the
-			//     client is running from the datagram that was sent to us by
-			//     the client.
-			//  receivePacket.getPort() - the destination port number on the
-			//     destination host where the client is running. The client
-			//     sends and receives datagrams through the same socket/port,
-			//     so we extract the port that the client used to send us the
-			//     datagram, and use that as the destination port for the TFTP
-			//     packet.
+			System.out.println("Containing: " +
+			new String("0"+(int)receivePacket.getData()[1]+receivePacket.getData()[2]*256+receivePacket.getData()[2]%256));
+			
+			serverThreadPort = receivePacket.getPort();
 
 			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
 					receivePacket.getAddress(), clientPort);
 
 			System.out.println( "Simulator: Sending packet:");
-			System.out.println("To host: " + sendPacket.getAddress());
+			System.out.println("To ClIENT: " + sendPacket.getAddress());
 			System.out.println("Destination host port: " + sendPacket.getPort());
 			len = sendPacket.getLength();
 			System.out.println("Length: " + len);
 			System.out.println("Containing: ");
-			for (j=0;j<len;j++) {
-				System.out.println("byte " + j + " " + data[j]);
-			}
+			System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
 
 			// Send the datagram packet to the client via a new socket.
 			try {
@@ -190,9 +144,6 @@ public class ErrorSimulator {
 				System.exit(1);
 			}
 
-			System.out.println("Simulator: packet sent using port " + sendSocket.getLocalPort());
-			System.out.println();
-
 			// We're finished with this socket, so close it.
 			sendSocket.close();
 		} // end of loop
@@ -200,28 +151,30 @@ public class ErrorSimulator {
 	}
 
 	public static void main(String args[]){
-//		Scanner in = new Scanner(System.in);
-//		
-//		do {
-//			System.out.println("Enter Error Simulation mode ([0]: Normal Mode, [1]: Lost Packet, [2]: Delay Packet, [3]: Duplicate Packet): ");
-//			in.nextLine();
-//			if (in.nextInt() == 0) { // [0]: Normal Mode --> Pass through
-//				System.out.println("Mode Selected: " + in.nextInt());
-//				modeType = 0;
-//			} else if (in.nextInt() == 1) { // [1]: Lost Packet
-//				System.out.println("Mode Selected: " + in.nextInt());
-//				modeType = 1;
-//			} else if (in.nextInt() == 2) { // [2]: Delay Packet
-//				System.out.println("Mode Selected: " + in.nextInt());
-//				modeType = 2;
-//			} else if (in.nextInt() == 3) { // [3]: Duplicate Packet
-//				System.out.println("Mode Selected: " + in.nextInt());
-//				modeType = 3;
-//			} else {
-//				modeType = null;
-//			}
-//		} while (modeType != null);
-//		in.close();
+		Scanner input = new Scanner(System.in);
+		int rrq = 0;
+		int data = 0;
+		int ack = 0;
+		
+		boolean done = false;
+		while(!done) {
+			while(true) {
+				System.out.println(	"Which Mode to Apply: "
+									+ "\n    [0]Normal Mode"
+									+ "\n    [1]Lost packet Mode"
+									+ "\n    [2]Delayed Packet Mode"
+									+ "\n    [3]Duplicated Packet Mode"
+									+ "\n    [4]Done");
+				int mode = input.nextInt();
+				if(!(mode>-1 && mode<4)) {System.out.println("Pick One of the Option! (1-4)");}
+				if(mode==4) {done = true;break;}
+				
+				System.out.println("Which Packet type to apply Mode:"
+									+ "\n    [0]Read Request (RRQ) Packets"
+									+ "\n    [1]Write Request Packets"
+									+ "\n    [2]Data Packets");
+			}
+		}
 		
 		ErrorSimulator sim = new ErrorSimulator();
 		sim.passOnTFTP();

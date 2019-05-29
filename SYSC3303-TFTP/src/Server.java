@@ -212,6 +212,7 @@ class DealWithClientRequest extends Thread{
 
             if(clientBlockNum != blockNum){
                 System.out.println(new Exception("Client & Server block number missmatch!"));
+                System.exit(1);
             }
 
             //System.out.println("******New Packet Recieved*****");

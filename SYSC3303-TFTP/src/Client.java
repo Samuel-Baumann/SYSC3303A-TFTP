@@ -240,12 +240,10 @@ public class Client {
 					len = msg.length;
 					blockNum++;
 
-					try {
-						sendPacket = new DatagramPacket(msg, len, InetAddress.getLocalHost(), receivePacket.getPort());
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
-						System.exit(1);
-					}
+
+					sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), 
+							(run==Mode.NORMAL)?receivePacket.getPort():23);
+
 
 					System.out.println("Packet created");
 					System.out.println("Sending packet . . .");
@@ -443,7 +441,8 @@ public class Client {
 						}
 						//blockNum++;
 
-						sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), receivePacket.getPort());
+						sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), 
+								(run==Mode.NORMAL)?receivePacket.getPort():23);
 
 						System.out.println("Client: packet created");
 						System.out.println("Client: sending packet . . .");
@@ -454,7 +453,7 @@ public class Client {
 							len = sendPacket.getLength();
 							System.out.println("block Number: "+blockNum);
 							System.out.println("Length: " + len);
-							System.out.println("Containing: "+new String(sendPacket.getData()));
+							System.out.println("Containing: "+new String(sendPacket.getData(),4,sendPacket.getLength()-4));
 						}
 
 						// Send the datagram packet to the server via the send/receive socket.
@@ -500,7 +499,6 @@ public class Client {
 
 			}
 
-			// TODO: Continuous Input ..
 			System.out.println("Enter y to shut down or anything else to continue: ");
 			s = scan.next();
 
