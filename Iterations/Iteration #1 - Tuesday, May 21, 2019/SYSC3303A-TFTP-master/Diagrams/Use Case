@@ -1,0 +1,29 @@
+Use Case: Client sends/receives files to/from a server
+
+Summary: User starts up a new client thread and enters a request. The request is sent to the intermediate host (error handler), copied and sent to a server instance, checked and validated and a response is sent back to the client. If the system is in verbose mode, these steps are printed on arrival and exit to/from each component.
+
+Precondition: The Client and Host (error handler) are all running on the same machine as an instance of the server, alongside the server connection handler.
+
+Main Sequence: 
+
+A new client is created, and the user is asked for various input settings such as which server to send to, which mode they would like and the directory that the files they wish to transfer are stored
+While the client is waiting, the user gives the system a read request and provides the file name as additional input
+Client prints and sends that request to the Host
+Host prints upon receiving, then reprints and sends to Server
+Server prints upon receiving and checks validity
+Server prints response and sends back to Host
+Host prints upon receiving, then reprints and sends back to Client
+Client prints response and closes all unused sockets
+
+Alternative Sequences: 
+	Step 1: User may opt to send directly to the Server instead of the Error simulator Host, in which case steps 3 and 6 are skipped
+	Step 2: User may give a write request (steps are identical)
+	Step 2: User may give the client instance a shutdown command, and the system will quit
+	Step 5: User may have given an invalid request, in which case the system quits here
+	Step X: At any step, if the mode is changed from the default ‘verbose’ to ‘quiet’, no     printing will occur
+
+Non Functional Requirements: 
+Timeout will occur if the system is inactive for too long(?)
+The user may enter an invalid request, in which case the system will exit
+
+Postcondition: The data has been sent and a response has been received, and the system is ready to repeat the process until the user quits manually
