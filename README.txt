@@ -30,13 +30,16 @@ Breakdown:
 * Code - Sirak and Henri: 
 	* Fixed prior Read and Write errors that existed in Iteration #1
 	* Added support for error simulation for both server and client side
-* Supporting Documentation, UML and Use Case: Sam
-* State Machine diagrams and added verbose/quit user input code to Client: Gen
+* Supporting Documentation, UML, Sequence and Use Case: Sam
+* State Machine diagrams: Gen
 
 Setup:
 To run, a user must have an instance of the client and server on 
-the same machine, and must also run the connection handler and error simulator if 
-they wish to run tests. Once all of these consoles are open and the threads are running,
-follow the steps outlined in the Client's main() function to select your mode, file 
-locations and other customizable options. To quit, again follow the instruction in 
-Client to send a shutdown command to the system.
+the same machine, and must also run the error simulator if they wish to run tests. 
+
+Make sure that you decide which mode you want the error simulator to be in 
+before you transfer between the server and client.
+
+Once all of these consoles are open and the threads are running, follow the steps outlined in the Client's 
+main() function to select your mode, file locations and other customizable options. To quit,
+again follow the instruction in Client to send a shutdown command to the system.
