@@ -46,7 +46,6 @@ public class ErrorSimulator {
 		for(;;) { // loop forever
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
-
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -81,7 +80,6 @@ public class ErrorSimulator {
 			System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
 
 			// Send the datagram packet to the server via the send/receive socket.
-
 			try {
 				sendReceiveSocket.send(sendPacket);
 			} catch (IOException e) {
@@ -91,7 +89,6 @@ public class ErrorSimulator {
 
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
-
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -153,24 +150,16 @@ public class ErrorSimulator {
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
 		int mode;
-
 		System.out.println("Pick a mode: "
-				+ "\n[0]Lost Request"
-				+ "\n[1]Delay Request"
-				+ "\n[2]Duplicate Request"
-				+ "\n[3]Lost data Request"
-				+ "\n[4]Delay data Request"
-				+ "\n[5]Duplicate data Request"
-				+ "\n[6]Lost ack Request"
-				+ "\n[7]Delay ack Request"
-				+ "\n[8]Duplicate ack Request"
-				+ "\n[9]Normal Mode\n");
-		
+				+ "\n[0]Lost data Request"
+				+ "\n[1]Delay data Request"
+				+ "\n[2]Duplicate data Request"
+				+ "\n[3]Lost ack Request"
+				+ "\n[4]Delay ack Request"
+				+ "\n[5]Duplicate ack Request"
+				+ "\n[6]Normal Mode\n");
 		mode = input.nextInt();
-		
-		
 		input.close();
-
 		ErrorSimulator sim = new ErrorSimulator(mode);
 		sim.passOnTFTP();
 	}
