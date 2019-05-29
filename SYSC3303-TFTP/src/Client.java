@@ -3,7 +3,7 @@ import java.io.*;
 import java.net.*;
 
 /**
- * @author Sirak Berhane, Ruchi Bhatia, Henri Umba
+ * @author Sirak Berhane, Henri Umba
  * 
  * TFTPClient.java
  * This class is the client side for a very simple assignment based on TFTP on

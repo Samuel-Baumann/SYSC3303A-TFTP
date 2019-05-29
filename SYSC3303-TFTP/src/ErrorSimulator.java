@@ -5,7 +5,7 @@ import java.net.SocketException;
 import java.util.Scanner;
 
 /** 
- * @author Sirak Berhane, Ruchi Bhatia, Henri Umba
+ * @author Sirak Berhane, Henri Umba
  * 
  * ErrorSimulator.java
  * This class is the beginnings of an error simulator for a simple TFTP server 
@@ -20,9 +20,10 @@ public class ErrorSimulator {
 	// UDP Data gram packets and sockets used to send / receive
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket, sendReceiveSocket;
-	
-	public ErrorSimulator()
-	{
+	private int mode;
+
+	public ErrorSimulator(int mode) {
+		this.mode = mode;
 		try {
 			// Construct a datagram socket and bind it to port 23
 			// on the local host machine. This socket will be used to
@@ -111,8 +112,8 @@ public class ErrorSimulator {
 			System.out.println("Length: " + len);
 			System.out.println("Containing: ");
 			System.out.println("Containing: " +
-			new String("0"+(int)receivePacket.getData()[1]+receivePacket.getData()[2]*256+receivePacket.getData()[2]%256));
-			
+					new String("0"+(int)receivePacket.getData()[1]+receivePacket.getData()[2]*256+receivePacket.getData()[2]%256));
+
 			serverThreadPort = receivePacket.getPort();
 
 			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
@@ -147,36 +148,30 @@ public class ErrorSimulator {
 			// We're finished with this socket, so close it.
 			sendSocket.close();
 		} // end of loop
-
 	}
 
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
-		int rrq = 0;
-		int data = 0;
-		int ack = 0;
+		int mode;
+
+		System.out.println("Pick a mode: "
+				+ "\n[0]Lost Request"
+				+ "\n[1]Delay Request"
+				+ "\n[2]Duplicate Request"
+				+ "\n[3]Lost data Request"
+				+ "\n[4]Delay data Request"
+				+ "\n[5]Duplicate data Request"
+				+ "\n[6]Lost ack Request"
+				+ "\n[7]Delay ack Request"
+				+ "\n[8]Duplicate ack Request"
+				+ "\n[9]Normal Mode\n");
 		
-		boolean done = false;
-		while(!done) {
-			while(true) {
-				System.out.println(	"Which Mode to Apply: "
-									+ "\n    [0]Normal Mode"
-									+ "\n    [1]Lost packet Mode"
-									+ "\n    [2]Delayed Packet Mode"
-									+ "\n    [3]Duplicated Packet Mode"
-									+ "\n    [4]Done");
-				int mode = input.nextInt();
-				if(!(mode>-1 && mode<4)) {System.out.println("Pick One of the Option! (1-4)");}
-				if(mode==4) {done = true;break;}
-				
-				System.out.println("Which Packet type to apply Mode:"
-									+ "\n    [0]Read Request (RRQ) Packets"
-									+ "\n    [1]Write Request Packets"
-									+ "\n    [2]Data Packets");
-			}
-		}
+		mode = input.nextInt();
 		
-		ErrorSimulator sim = new ErrorSimulator();
+		
+		input.close();
+
+		ErrorSimulator sim = new ErrorSimulator(mode);
 		sim.passOnTFTP();
 	}
 }

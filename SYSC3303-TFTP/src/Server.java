@@ -8,7 +8,7 @@ import java.net.SocketException;
 import java.nio.file.Files;
 
 /**
- * @author Sirak Berhane, Ruchi Bhatia, Henri Umba
+ * @author Sirak Berhane, Henri Umba
  *	
  * Server.java
  */
