@@ -43,3 +43,6 @@ before you transfer between the server and client.
 Once all of these consoles are open and the threads are running, follow the steps outlined in the Client's 
 main() function to select your mode, file locations and other customizable options. To quit,
 again follow the instruction in Client to send a shutdown command to the system.
+
+Known issue:
+Server can't shutdown by custom command.
