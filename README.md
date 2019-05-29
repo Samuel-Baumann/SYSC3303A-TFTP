@@ -6,8 +6,6 @@
   
   Samuel Baumann  - 101033635
   
-  Ruchi Bhatia    - 100970682
-  
   Henri Umba      - 101022562
   
   Gen Li          - 100967203
@@ -21,7 +19,7 @@ Note: This iteration also includes Iteration 0.
 * Use Case Document
 * Code for each component + supplementary classes & constants
 ### Breakdown:
-* Code - Sirak (adapted from Sirak's Assignment 1 and further expanded to include file transfer + helper classes)
+* Code - Sirak (adapted from his Assignment 1 and further expanded to include file transfer + helper classes)
 * Supporting Documentation, UML and Use Case: Sam
 * State Machine diagrams and added verbose/quit user input code to Client: Ruchi
 ### Diagram:
