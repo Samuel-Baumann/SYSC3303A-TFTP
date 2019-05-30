@@ -6,6 +6,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.file.Files;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Sirak Berhane, Henri Umba
@@ -15,6 +17,28 @@ import java.nio.file.Files;
 public class Server{
     DatagramSocket receiveSocket;
     DatagramPacket receivePacket;
+    
+    class Listener extends Thread{
+    	AtomicBoolean isDone; Scanner in = new Scanner(System.in);
+    	Listener(AtomicBoolean bool){
+    		this.isDone = bool;
+    	}
+    	
+    	public void run() {
+    		while(true) {
+    			System.out.println("type 'shutdown' to stop server ");
+    			String ans = in.nextLine();
+    			if(ans.equals("shutdown")) {
+    				isDone.set(true);
+    				break;
+    			}
+    				
+    		}
+    	}
+    }
+    
+    Thread listen;
+    AtomicBoolean quitflag;
 
     public Server(){
         try{
@@ -22,11 +46,14 @@ public class Server{
         }catch(SocketException se){
             se.printStackTrace();
         }
+        quitflag = new AtomicBoolean();
+        quitflag.set(false);
+        listen = new Listener(quitflag);
     }
 
     public void receivingNewPacket(){
-        
-
+        listen.start();
+    	
         while(true){
             byte [] data = new byte[100]; 
             receivePacket = new DatagramPacket(data,data.length);
@@ -34,10 +61,22 @@ public class Server{
             // Server listen on port 69 forever (for now, in later iteration this needs to change)
             // Server receives on port 69
             System.out.println("******Server Waiting for Packet****\n");
-            try{
-                receiveSocket.receive(receivePacket);
-            }catch(IOException ioe){
-                ioe.printStackTrace();
+           
+            while(true) {
+            	boolean timeflag = true;
+            	try{
+            		receiveSocket.setSoTimeout(3000);
+            		receiveSocket.receive(receivePacket);
+            	}catch(IOException ioe){
+            		timeflag = false;
+            	}
+            	
+            	if(timeflag || quitflag.get()) {break;}
+            }
+            
+            if(quitflag.get()) {
+            	System.out.println("Server has been ordered to shutdown!!!");
+            	return;
             }
 
             System.out.println("New Packet Received!!");
