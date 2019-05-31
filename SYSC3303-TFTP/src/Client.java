@@ -11,10 +11,11 @@ import java.net.*;
  * the appropriate response from the server.  No actual file transfer takes place. 
  */
 public class Client {
-
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket sendReceiveSocket;
-
+	private Mode run;
+	private Constants.ModeType verbose;
+	private Print printable;
 	// we can run in normal (send directly to server) or test
 	// (send to simulator) mode
 	public static enum Mode {
@@ -22,6 +23,7 @@ public class Client {
 	};
 
 	public Client() {
+		this.printable = new Print(verbose);
 		try {
 			// Construct a datagram socket and bind it to any available
 			// port on the local host machine. This socket will be used to
@@ -34,20 +36,16 @@ public class Client {
 	}
 
 	public void sendAndReceive() {
-
 		// Scanner object used to receive input
 		Scanner scan = new Scanner(System.in);
 		String s;
-
-		boolean verbose = false, running = true;
-
+		boolean running = true;
 		byte[] msg = new byte[100], // message we send
 				fn, // filename as an array of bytes
 				md, // mode as an array of bytes
 				data; // reply as array of bytes
 		String mode; // filename and mode as Strings
-		int j, len, sendPort;
-
+		int len, sendPort;
 		File directory;
 
 		System.out.println("Type in the filepath for the directory used");
@@ -69,14 +67,14 @@ public class Client {
 		// is needed.
 		// However, in the project, the following will be useful, except
 		// that test vs. normal will be entered by the user.
-		Mode run = Mode.TEST; // change to NORMAL to send directly to server
+		run = Mode.TEST; // change to NORMAL to send directly to server
 
 		while (running) {
 			System.out.println("enter a v for Verbose mode or a q for quiet mode: ");
 			s = scan.next();
 
 			if (s.compareToIgnoreCase("v") == 0) {
-				verbose = true;
+				verbose = Constants.ModeType.VERBOSE;
 			}
 
 			System.out.println("enter a n for normal mode or a t for test mode: ");
@@ -171,25 +169,9 @@ public class Client {
 				}
 
 				System.out.println("Client: packet created");
-				System.out.println("Client: sending packet . . .");
-
-				if (verbose == true) {
-					System.out.println("To host: " + sendPacket.getAddress());
-					System.out.println("Destination host port: " + sendPacket.getPort());
-					len = sendPacket.getLength();
-					System.out.println("Length: " + len);
-					System.out.println("Containing: ");
-					for (j = 0; j < len; j++) {
-						System.out.println("byte " + j + " " + msg[j]);
-					}
-
-					// Form a String from the byte array, and print the string.
-					String sending = new String(msg, 0, len);
-					System.out.println(sending);
-				}
+				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 
 				// Send the datagram packet to the server via the send/receive socket.
-
 				try {
 					sendReceiveSocket.send(sendPacket);
 				} catch (IOException e) {
@@ -217,15 +199,7 @@ public class Client {
 					}
 
 					// Process the received datagram.
-					System.out.println("Client: Packet received:");
-					if (verbose == true) {
-						System.out.println("From host: " + receivePacket.getAddress());
-						System.out.println("Host port: " + receivePacket.getPort());
-						len = receivePacket.getLength();
-						System.out.println("Length: " + len);
-						System.out.println("Block Num: "+blockNum);
-					}
-					System.out.println("Containing: "+(new String(data)));
+					printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
 					size = receivePacket.getLength()-4;
 					System.arraycopy(data, 4, receivingArray, (blockNum-1)*512, size);
 
@@ -240,37 +214,18 @@ public class Client {
 					len = msg.length;
 					blockNum++;
 
-
-					sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), 
-							(run==Mode.NORMAL)?receivePacket.getPort():23);
-
-
+					sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), (run==Mode.NORMAL)?receivePacket.getPort():23);
+					
 					System.out.println("Packet created");
-					System.out.println("Sending packet . . .");
-					if (verbose == true) {
-						System.out.println("To host: " + sendPacket.getAddress());
-						System.out.println("Destination host port: " + sendPacket.getPort());
-						len = sendPacket.getLength();
-						System.out.println("Length: " + len);
-						System.out.println("Containing: ");
-						for (j = 0; j < len; j++) {
-							System.out.println("byte " + j + " " + msg[j]);
-						}
-
-						// Form a String from the byte array, and print the string.
-						String sending = new String(msg, 0, len);
-						System.out.println(sending);
-					}
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, msg);
 
 					// Send the datagram packet to the server via the send/receive socket.
-
 					try {
 						sendReceiveSocket.send(sendPacket);
 					} catch (IOException e) {
 						e.printStackTrace();
 						System.exit(1);
 					}
-
 				}
 
 				String Filepath = "./Client/"+(new String(fn));
@@ -279,13 +234,10 @@ public class Client {
 					OutputStream os = new FileOutputStream(file);
 					os.write(receivingArray);
 					os.close();
-					System.out.println("TEST TEST TEST!!!!!!!!");
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.exit(1);
 				}
-
-
 
 			} else if (s.compareTo("2") == 0) {
 				System.out.println("Forming a WRQ connection");
@@ -304,9 +256,7 @@ public class Client {
 
 				// Prepare a DatagramPacket and send it via sendReceiveSocket
 				// to sendPort on the destination host (also on this machine).
-
 				msg[0] = 0;
-
 				// extract filename and convert it to bytes
 				fn = sendingFile.getName().getBytes();
 				// copy it into the msg
@@ -318,10 +268,8 @@ public class Client {
 				mode = "octet";
 				// convert to bytes
 				md = mode.getBytes();
-
 				// and copy into the msg
 				System.arraycopy(md, 0, msg, fn.length + 3, md.length);
-
 				// length of the message
 				len = fn.length + md.length + 4;
 				// length of filename + length of mode + opcode (2) + two 0s (2)
@@ -340,25 +288,9 @@ public class Client {
 				}
 
 				System.out.println("Client: packet created");
-				System.out.println("Client: sending packet . . .");
-
-				if (verbose == true) {
-					System.out.println("To host: " + sendPacket.getAddress());
-					System.out.println("Destination host port: " + sendPacket.getPort());
-					len = sendPacket.getLength();
-					System.out.println("Length: " + len);
-					System.out.println("Containing: ");
-					for (j = 0; j < len; j++) {
-						System.out.println("byte " + j + " " + msg[j]);
-					}
-
-					// Form a String from the byte array, and print the string.
-					String sending = new String(msg, 0, len);
-					System.out.println(sending);
-				}
+				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, msg);
 
 				// Send the datagram packet to the server via the send/receive socket.
-
 				try {
 					sendReceiveSocket.send(sendPacket);
 				} catch (IOException e) {
@@ -384,15 +316,7 @@ public class Client {
 				}
 
 				// Process the received datagram.
-				System.out.println("Client: Packet received:");
-
-				if (verbose == true) {
-					System.out.println("From host: " + receivePacket.getAddress());
-					System.out.println("Host port: " + receivePacket.getPort());
-					len = receivePacket.getLength();
-					System.out.println("Length: " + len);
-				}
-				System.out.println("Containing: "+(new String(data)));
+				printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), null, data);
 
 				long size = sendingFile.length();
 				int blockNum = 1;
@@ -413,13 +337,6 @@ public class Client {
 						System.exit(1);
 					} else {
 						System.out.println("Client: creating packet . . .");
-
-//						msg = new byte[516];
-//						msg[0] = 0;
-//						msg[1] = 3;
-//						msg[2] = (byte) ((int) blockNum/256);
-//						msg[3] = (byte) ((int) blockNum%256);
-
 						if ((blockNum)*512<fileArray.length) {
 							msg = new byte[516];
 							msg[0] = 0;
@@ -435,29 +352,16 @@ public class Client {
 							msg[1] = 3;
 							msg[2] = (byte) ((int) blockNum/256);
 							msg[3] = (byte) ((int) blockNum%256);
-							 System.arraycopy(fileArray, (blockNum-1)*512, msg, 4, fileArray.length % 512);
-				                sendPacket = new DatagramPacket(msg, fileArray.length % 512,
-				                		receivePacket.getAddress(), receivePacket.getPort());
+							System.arraycopy(fileArray, (blockNum-1)*512, msg, 4, fileArray.length % 512);
+							sendPacket = new DatagramPacket(msg, fileArray.length % 512,
+									receivePacket.getAddress(), receivePacket.getPort());
 						}
-						//blockNum++;
-
 						sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), 
 								(run==Mode.NORMAL)?receivePacket.getPort():23);
 
-						System.out.println("Client: packet created");
-						System.out.println("Client: sending packet . . .");
-
-						if (verbose == true) {
-							System.out.println("To host: " + sendPacket.getAddress());
-							System.out.println("Destination host port: " + sendPacket.getPort());
-							len = sendPacket.getLength();
-							System.out.println("block Number: "+blockNum);
-							System.out.println("Length: " + len);
-							System.out.println("Containing: "+new String(sendPacket.getData(),4,sendPacket.getLength()-4));
-						}
+						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 
 						// Send the datagram packet to the server via the send/receive socket.
-
 						try {
 							sendReceiveSocket.send(sendPacket);
 						} catch (IOException e) {
@@ -483,20 +387,10 @@ public class Client {
 						}
 
 						// Process the received datagram.
-						System.out.println("Client: Packet received:");
-
-						if (verbose == true) {
-							System.out.println("From host: " + receivePacket.getAddress());
-							System.out.println("Host port: " + receivePacket.getPort());
-							len = receivePacket.getLength();
-							System.out.println("Length: " + len);
-						}
-						System.out.println("Containing: "+(new String(receivePacket.getData())));
-
+						printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
 						blockNum++;
 					}
 				}
-
 			}
 
 			System.out.println("Enter y to shut down or anything else to continue: ");

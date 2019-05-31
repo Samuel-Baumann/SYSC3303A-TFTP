@@ -1,1 +1,13 @@
+/Client$Mode.class
+/Client.class
+/Constants$ClientPacketSendType.class
+/Constants$ModeType.class
+/Constants$PacketByte.class
+/Constants$PacketString.class
+/Constants$ServerType.class
+/Constants.class
+/DealWithClientRequest.class
+/ErrorSimulator.class
+/Print.class
 /Server$Listener.class
+/Server.class

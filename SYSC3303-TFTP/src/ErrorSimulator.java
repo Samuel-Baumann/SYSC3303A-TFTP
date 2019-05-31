@@ -16,7 +16,6 @@ import java.util.Scanner;
  * from the server.  A new socket is used for each communication back to the client.  
  */
 public class ErrorSimulator {
-
 	// UDP Data gram packets and sockets used to send / receive
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket, sendReceiveSocket;
@@ -42,7 +41,7 @@ public class ErrorSimulator {
 	public void passOnTFTP(){
 		byte[] data;
 		int clientPort, serverThreadPort=-1, len;
-		
+
 		boolean send = true;
 		int dup = 1;
 		int info;
@@ -72,9 +71,9 @@ public class ErrorSimulator {
 			System.out.println("Length: " + len);
 			System.out.println("Containing: " +new String(receivePacket.getData(),2,len-2));
 
-			
-			
-			
+
+
+
 			if(mode != 6) {
 				System.out.println("***************WORK******************");
 				switch(mode) {
@@ -130,7 +129,7 @@ public class ErrorSimulator {
 					break;
 				}
 			}
-			
+
 			for(int x = 0; x<dup; x++) {
 				if(send) {
 					sendPacket = new DatagramPacket(data, len,
@@ -154,7 +153,7 @@ public class ErrorSimulator {
 					}
 				}
 			}
-			
+
 			send = true;
 
 			// Construct a DatagramPacket for receiving packets up
@@ -230,10 +229,10 @@ public class ErrorSimulator {
 				+ "\n[4]Delay ack"
 				+ "\n[5]Duplicate ack"
 				+ "\n[6]Normal Mode\n");
-		
+
 		mode = input.nextInt();
-		
-		
+
+
 		input.close();
 
 		ErrorSimulator sim = new ErrorSimulator(mode);
