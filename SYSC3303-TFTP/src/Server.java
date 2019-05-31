@@ -15,11 +15,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Server.java
  */
 public class Server{
-	DatagramSocket receiveSocket;
-	DatagramPacket receivePacket;
+	private DatagramSocket receiveSocket;
+	private DatagramPacket receivePacket;
+	private static Constants.ModeType printType;
+	private Constants.ModeType printMode;
+	private Print printable;
+	private Thread listen;
+	private AtomicBoolean quitflag;
 
 	class Listener extends Thread{
-		AtomicBoolean isDone; Scanner in = new Scanner(System.in);
+		private AtomicBoolean isDone; Scanner in = new Scanner(System.in);
 		Listener(AtomicBoolean bool){
 			this.isDone = bool;
 		}
@@ -37,10 +42,10 @@ public class Server{
 		}
 	}
 
-	Thread listen;
-	AtomicBoolean quitflag;
-
 	public Server(){
+		this.printMode = printType;
+		this.printable = new Print(printMode);
+		
 		try{
 			receiveSocket = new DatagramSocket(69);
 		}catch(SocketException se){
@@ -79,21 +84,11 @@ public class Server{
 				return;
 			}
 
-			System.out.println("New Packet Received!!");
-			System.out.println("From Host: "+receivePacket.getAddress());
-			System.out.println("Host Port: "+receivePacket.getPort());
-			System.out.println("Length: "+receivePacket.getLength());
-			System.out.println("Containing: ");
-
-			for(int x = 0; x<receivePacket.getLength(); x++){
-				System.out.print(data[x]+" ");
-			}
-
-			System.out.println("\n====================================");
+			printable.PrintReceivedPackets(Constants.ServerType.SERVER, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), null, data);
 
 			// Server decides if this is a read/write request
 			// Server creates Thread to deal with Request and gives it the type
-			Thread dealWithClientRequest = new DealWithClientRequest(receivePacket, processingReadOrWrite(data));
+			Thread dealWithClientRequest = new DealWithClientRequest(receivePacket, processingReadOrWrite(data), printMode);
 			dealWithClientRequest.start();
 
 			data = new byte[100]; 
@@ -115,6 +110,19 @@ public class Server{
 	}
 
 	public static void main(String [] args){
+		Scanner input = new Scanner(System.in);
+		String inputText;
+		
+		System.out.println("Enter v for verbose or q for quiet console output mode: ");
+		inputText = input.nextLine();
+		if (inputText.equals("v")) {
+			printType = Constants.ModeType.VERBOSE;
+		} else {
+			printType = Constants.ModeType.QUIET;
+		}
+		
+		input.close();
+		
 		Server serv = new Server();
 		serv.receivingNewPacket();
 	}
@@ -122,13 +130,18 @@ public class Server{
 
 // New Thread which deals with Client Request
 class DealWithClientRequest extends Thread{
-	DatagramSocket sendReceiveSocket;
-	DatagramPacket receivePacket, sendPacket;
-	String type;
-	public DealWithClientRequest(DatagramPacket pckt, String type){
+	private DatagramSocket sendReceiveSocket;
+	private DatagramPacket receivePacket, sendPacket;
+	private String type;
+	private Constants.ModeType printMode;
+	private Print printable;
+
+	public DealWithClientRequest(DatagramPacket pckt, String type, Constants.ModeType consolePrintMode){
 		this.receivePacket = pckt;
 		this.type = type;
-
+		this.printMode = consolePrintMode;
+		this.printable = new Print(printMode);
+		
 		try{
 			sendReceiveSocket = new DatagramSocket();
 		}catch(SocketException se){
@@ -138,9 +151,6 @@ class DealWithClientRequest extends Thread{
 	}
 
 	public String[] getFilenameAndMode(){
-
-		// temp[0] => filename
-		// temp[1] => mode
 		byte [] data = receivePacket.getData();
 		String [] temp = new String [2];
 		int len = receivePacket.getLength();
@@ -173,16 +183,8 @@ class DealWithClientRequest extends Thread{
 
 	public void run(){
 		System.out.println("New Thread with Packet: "+receivePacket+" of Type: "+type);
-
-
-
 		String [] information = getFilenameAndMode();
 		System.out.println("Filename: "+information[0]+" Mode:"+information[1]);
-
-		// for(byte e: receivePacket.getData()){
-		//     System.out.print(e);
-		// }
-
 		if(type.equals("READ")) communicateReadRequest(information[0]);
 		else if(type.equals("WRITE")) communicateWriteRequest(information[0]);
 	}
@@ -203,12 +205,7 @@ class DealWithClientRequest extends Thread{
 			System.exit(1);
 		}
 
-		// for(byte e: wholeBlock){
-		//     System.out.println(e+" ");
-		// }
-
 		int blockNum = 1;
-		//int index = 0;
 		while((blockNum-1)*512 < wholeBlock.length){
 			byte [] msg = new byte [516];
 			int ind = 0;
@@ -226,12 +223,8 @@ class DealWithClientRequest extends Thread{
 				sendPacket = new DatagramPacket(msg, wholeBlock.length % 512, receivePacket.getAddress(), receivePacket.getPort());
 			}
 
-			System.out.println( "Creating DATA Packet to Send"+
-					"\nClient Address: "+ sendPacket.getAddress()+
-					"\nClient Port: "+ sendPacket.getPort()+
-					"\nBlock Number: "+ blockNum+
-					"\nCONTAINS: "+new String(sendPacket.getData(), 4, ((blockNum)*512<wholeBlock.length)?512:wholeBlock.length % 512));
-
+			System.out.println( "Creating DATA Packet to Send .. /n");
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 			while(true) {
 				boolean temp = true;
 				try{
@@ -262,12 +255,8 @@ class DealWithClientRequest extends Thread{
 				System.out.println(new Exception("Client & Server block number missmatch!"));
 				System.exit(1);
 			}
-
-			//System.out.println("******New Packet Recieved*****");
-
 			blockNum++;
 		}
-
 		System.out.println("THREAD TERMINATED");
 	}
 
@@ -310,14 +299,8 @@ class DealWithClientRequest extends Thread{
 				ioe.printStackTrace();
 				System.exit(1);
 			}
-
-			System.out.println( "Got DATA Packet from Client"+
-					"\nClient Address: "+ receivePacket.getAddress()+
-					"\nClient Port: "+ receivePacket.getPort()+
-					"\nBlock Number: "+ blockNum+
-					"\nLength: "+receivePacket.getLength()+
-					"\nCONTAINS: "+new String(receivePacket.getData(), 4, receivePacket.getLength()-4));
-
+			
+			printable.PrintReceivedPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
 			byte [] data = receivePacket.getData();            
 			int clientBlockNum = (256*data[2])+data[3];
 			if(data[0]==0 && data[1]==3 && blockNum == clientBlockNum){
@@ -337,10 +320,11 @@ class DealWithClientRequest extends Thread{
 				ioe.printStackTrace();
 				System.exit(1);
 			}
-
+			
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 			blockNum++;
 		}
-
+		
 		String Filepath = "./Server/"+(new String(filename));
 		File file = new File(Filepath);
 		try {
@@ -351,7 +335,6 @@ class DealWithClientRequest extends Thread{
 			e.printStackTrace();
 			System.exit(1);
 		}
-
 		System.out.println("THREAD TERMINATED");
 	}
 }

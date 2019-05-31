@@ -20,9 +20,14 @@ public class ErrorSimulator {
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket, sendReceiveSocket;
 	private int mode;
+	private static Constants.ModeType printType;
+	private Constants.ModeType printMode;
+	private Print printable;
 
 	public ErrorSimulator(int mode) {
 		this.mode = mode;
+		this.printMode = printType;
+		this.printable = new Print(printMode);
 		try {
 			// Construct a datagram socket and bind it to port 23
 			// on the local host machine. This socket will be used to
@@ -40,16 +45,12 @@ public class ErrorSimulator {
 
 	public void passOnTFTP(){
 		byte[] data;
-		int clientPort, serverThreadPort=-1, len;
-
+		int clientPort, serverThreadPort=-1, len, dup = 1, info;
 		boolean send = true;
-		int dup = 1;
-		int info;
 
 		for(;;) { // loop forever
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
-
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -61,21 +62,12 @@ public class ErrorSimulator {
 				e.printStackTrace();
 				System.exit(1);
 			}
-
-			// Process the received datagram.
-			System.out.println("Simulator: Packet received:");
-			System.out.println("From CLIENT: " + receivePacket.getAddress());
+			
 			clientPort = receivePacket.getPort();
-			System.out.println("Client port: " + clientPort);
 			len = receivePacket.getLength();
-			System.out.println("Length: " + len);
-			System.out.println("Containing: " +new String(receivePacket.getData(),2,len-2));
-
-
-
+			printable.PrintReceivedPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, receivePacket.getAddress(), clientPort, len, null, data);
 
 			if(mode != 6) {
-				System.out.println("***************WORK******************");
 				switch(mode) {
 				case 0:
 					info = receivePacket.getData()[1];
@@ -134,17 +126,11 @@ public class ErrorSimulator {
 				if(send) {
 					sendPacket = new DatagramPacket(data, len,
 							receivePacket.getAddress(), (serverThreadPort==-1)?69:serverThreadPort);
-
-					System.out.println("Simulator: sending packet.");
-					System.out.println("To SERVER: " + sendPacket.getAddress());
-					System.out.println("Destination host port: " + sendPacket.getPort());
+					
 					len = sendPacket.getLength();
-					System.out.println("Length: " + len);
-					System.out.println("Containing: ");
-					System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
+					printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
 
 					// Send the datagram packet to the server via the send/receive socket.
-
 					try {
 						sendReceiveSocket.send(sendPacket);
 					} catch (IOException e) {
@@ -158,7 +144,6 @@ public class ErrorSimulator {
 
 			// Construct a DatagramPacket for receiving packets up
 			// to 100 bytes long (the length of the byte array).
-
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -172,28 +157,15 @@ public class ErrorSimulator {
 			}
 
 			// Process the received datagram.
-			System.out.println("Simulator: Packet received:");
-			System.out.println("From SERVER: " + receivePacket.getAddress());
-			System.out.println("Host port: " + receivePacket.getPort());
 			len = receivePacket.getLength();
-			System.out.println("Length: " + len);
-			System.out.println("Containing: ");
-			System.out.println("Containing: " +
-					new String("0"+(int)receivePacket.getData()[1]+receivePacket.getData()[2]*256+receivePacket.getData()[2]%256));
-
+			printable.PrintReceivedPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, receivePacket.getAddress(), receivePacket.getPort(), len, null, receivePacket.getData());
 			serverThreadPort = receivePacket.getPort();
 
 			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
 					receivePacket.getAddress(), clientPort);
-
-			System.out.println( "Simulator: Sending packet:");
-			System.out.println("To ClIENT: " + sendPacket.getAddress());
-			System.out.println("Destination host port: " + sendPacket.getPort());
+			
 			len = sendPacket.getLength();
-			System.out.println("Length: " + len);
-			System.out.println("Containing: ");
-			System.out.println("Containing: " +new String("0"+(int)sendPacket.getData()[1]+sendPacket.getData()[2]*256+sendPacket.getData()[2]%256));
-
+			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
 			// Send the datagram packet to the client via a new socket.
 			try {
 				// Construct a new datagram socket and bind it to any port
@@ -219,8 +191,8 @@ public class ErrorSimulator {
 
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
-		int mode;
-
+		int mode; String inputText;
+		
 		System.out.println("Pick a mode: "
 				+ "\n[0]Lost data"
 				+ "\n[1]Delay data"
@@ -229,12 +201,17 @@ public class ErrorSimulator {
 				+ "\n[4]Delay ack"
 				+ "\n[5]Duplicate ack"
 				+ "\n[6]Normal Mode\n");
-
 		mode = input.nextInt();
 
-
+		System.out.println("Enter v for verbose or q for quiet console output mode: ");
+		inputText = input.nextLine();
+		if (inputText.equals("v")) {
+			printType = Constants.ModeType.VERBOSE;
+		} else {
+			printType = Constants.ModeType.QUIET;
+		}
+		
 		input.close();
-
 		ErrorSimulator sim = new ErrorSimulator(mode);
 		sim.passOnTFTP();
 	}
