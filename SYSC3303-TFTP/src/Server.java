@@ -20,9 +20,7 @@ public class Server{
 	private static Constants.ModeType printType;
 	private Constants.ModeType printMode;
 	private Print printable;
-	private Thread listen;
-	private AtomicBoolean quitflag;
-
+	
 	class Listener extends Thread{
 		private AtomicBoolean isDone; Scanner in = new Scanner(System.in);
 		Listener(AtomicBoolean bool){
@@ -31,17 +29,19 @@ public class Server{
 
 		public void run() {
 			while(true) {
-				System.out.println("type 'shutdown' to stop server ");
+				System.out.println("type 'shutdown' to stop server");
 				String ans = in.nextLine();
 				if(ans.equals("shutdown")) {
 					isDone.set(true);
 					break;
 				}
-
 			}
 		}
 	}
-
+	
+	Thread listen;
+	AtomicBoolean quitflag;
+	
 	public Server(){
 		this.printMode = printType;
 		this.printable = new Print(printMode);
@@ -109,20 +109,8 @@ public class Server{
 		return "WRITE";
 	}
 
-	public static void main(String [] args){
-		Scanner input = new Scanner(System.in);
-		String inputText;
-		
-		System.out.println("Enter v for verbose or q for quiet console output mode: ");
-		inputText = input.nextLine();
-		if (inputText.equals("v")) {
-			printType = Constants.ModeType.VERBOSE;
-		} else {
-			printType = Constants.ModeType.QUIET;
-		}
-		
-		input.close();
-		
+	public static void main(String [] args) {
+		printType = Constants.ModeType.VERBOSE;
 		Server serv = new Server();
 		serv.receivingNewPacket();
 	}
