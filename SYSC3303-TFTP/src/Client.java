@@ -4,11 +4,11 @@ import java.net.*;
 
 /**
  * @author Sirak Berhane, Henri Umba
- *
+ * 
  * TFTPClient.java
  * This class is the client side for a very simple assignment based on TFTP on
- * UDP/IP. The client uses one port and sends a read or write request and gets
- * the appropriate response from the server.  No actual file transfer takes place.
+ * UDP/IP. The client uses one port and sends a read or write request and gets 
+ * the appropriate response from the server.  No actual file transfer takes place. 
  */
 public class Client {
 	private DatagramPacket sendPacket, receivePacket;
@@ -16,6 +16,7 @@ public class Client {
 	private Mode run;
 	private Constants.ModeType verbose;
 	private Print printable;
+	private static int actualSize = 0;
 	// we can run in normal (send directly to server) or test
 	// (send to simulator) mode
 	public static enum Mode {
@@ -168,23 +169,13 @@ public class Client {
 					System.exit(1);
 				}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 				System.out.println("Client: packet created\n");
 				if (sendPort == 23) {
 					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				} if (sendPort == 69) {
 					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				}
-
-=======
-				System.out.println("Client: packet created");
-				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-=======
-				System.out.println("Client: packet created");
-				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
+				
 
 				// Send the datagram packet to the server via the send/receive socket.
 				try {
@@ -214,21 +205,14 @@ public class Client {
 					}
 
 					// Process the received datagram.
-<<<<<<< HEAD
-<<<<<<< HEAD
 					if (sendPort == 23) {
 						printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
 					} if (sendPort == 69) {
 						printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
 					}
-
-=======
-					printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-=======
-					printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
+					
 					size = receivePacket.getLength()-4;
+					actualSize += size;
 					System.arraycopy(data, 4, receivingArray, (blockNum-1)*512, size);
 
 					System.out.println("Creating packet . . .");
@@ -243,25 +227,13 @@ public class Client {
 					blockNum++;
 
 					sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), (run==Mode.NORMAL)?receivePacket.getPort():23);
-<<<<<<< HEAD
-<<<<<<< HEAD
-
+					
 					System.out.println("Packet created\n");
 					if (sendPort == 23) {
 						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 					} if (sendPort == 69) {
 						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 					}
-=======
-					
-					System.out.println("Packet created");
-					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, msg);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-=======
-					
-					System.out.println("Packet created");
-					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, msg);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 
 					// Send the datagram packet to the server via the send/receive socket.
 					try {
@@ -276,15 +248,7 @@ public class Client {
 				File file = new File(Filepath);
 				try {
 					OutputStream os = new FileOutputStream(file);
-<<<<<<< HEAD
-<<<<<<< HEAD
-					os.write(receivingArray, 0, ((blockNum-2)*512)+(receivePacket.getLength()-2));
-=======
-					os.write(receivingArray);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-=======
-					os.write(receivingArray);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
+					os.write(receivingArray, 0, actualSize);
 					os.close();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -340,7 +304,11 @@ public class Client {
 				}
 
 				System.out.println("Client: packet created");
-				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, msg);
+				if (sendPort == 23) {
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+				} if (sendPort == 69) {
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+				}
 
 				// Send the datagram packet to the server via the send/receive socket.
 				try {
@@ -354,7 +322,6 @@ public class Client {
 
 				// Construct a DatagramPacket for receiving packets up
 				// to 100 bytes long (the length of the byte array).
-
 				data = new byte[100];
 				receivePacket = new DatagramPacket(data, data.length);
 
@@ -368,7 +335,11 @@ public class Client {
 				}
 
 				// Process the received datagram.
-				printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), null, data);
+				if (sendPort == 23) {
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+				} if (sendPort == 69) {
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+				}
 
 				long size = sendingFile.length();
 				int blockNum = 1;
@@ -396,8 +367,7 @@ public class Client {
 							msg[2] = (byte) ((int) blockNum/256);
 							msg[3] = (byte) ((int) blockNum%256);
 							System.arraycopy(fileArray, (blockNum-1)*512, msg, 4, 512);
-							sendPacket = new DatagramPacket(msg, msg.length, 
-									receivePacket.getAddress(), receivePacket.getPort());
+							sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), receivePacket.getPort());
 						} else {
 							msg = new byte[(fileArray.length % 512)+4];
 							msg[0] = 0;
@@ -405,26 +375,17 @@ public class Client {
 							msg[2] = (byte) ((int) blockNum/256);
 							msg[3] = (byte) ((int) blockNum%256);
 							System.arraycopy(fileArray, (blockNum-1)*512, msg, 4, fileArray.length % 512);
-							sendPacket = new DatagramPacket(msg, fileArray.length % 512,
-									receivePacket.getAddress(), receivePacket.getPort());
+							sendPacket = new DatagramPacket(msg, (msg.length - (msg.length-fileArray.length % 512)) + 4, receivePacket.getAddress(), receivePacket.getPort());
 						}
-						sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(),
+						sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), 
 								(run==Mode.NORMAL)?receivePacket.getPort():23);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 						if (sendPort == 23) {
 							printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 						} if (sendPort == 69) {
 							printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 						}
-=======
-						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-=======
-						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-
+						
 						// Send the datagram packet to the server via the send/receive socket.
 						try {
 							sendReceiveSocket.send(sendPacket);
@@ -451,7 +412,11 @@ public class Client {
 						}
 
 						// Process the received datagram.
-						printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
+						if (sendPort == 23) {
+							printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
+						} if (sendPort == 69) {
+							printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
+						}
 						blockNum++;
 					}
 				}

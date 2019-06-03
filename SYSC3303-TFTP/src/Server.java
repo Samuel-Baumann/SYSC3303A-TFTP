@@ -1,17 +1,17 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.nio.file.Files;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Sirak Berhane, Henri Umba
- *
+ *	
  * Server.java
  */
 public class Server{
@@ -20,7 +20,7 @@ public class Server{
 	private static Constants.ModeType printType;
 	private Constants.ModeType printMode;
 	private Print printable;
-	
+
 	class Listener extends Thread{
 		private AtomicBoolean isDone; Scanner in = new Scanner(System.in);
 		Listener(AtomicBoolean bool){
@@ -38,14 +38,14 @@ public class Server{
 			}
 		}
 	}
-	
+
 	Thread listen;
 	AtomicBoolean quitflag;
-	
+
 	public Server(){
 		this.printMode = printType;
 		this.printable = new Print(printMode);
-		
+
 		try{
 			receiveSocket = new DatagramSocket(69);
 		}catch(SocketException se){
@@ -60,7 +60,7 @@ public class Server{
 		listen.start();
 
 		while(true){
-			byte [] data = new byte[100];
+			byte [] data = new byte[100]; 
 			receivePacket = new DatagramPacket(data,data.length);
 
 			// Server listen on port 69 forever (for now, in later iteration this needs to change)
@@ -91,7 +91,7 @@ public class Server{
 			Thread dealWithClientRequest = new DealWithClientRequest(receivePacket, processingReadOrWrite(data), printMode);
 			dealWithClientRequest.start();
 
-			data = new byte[100];
+			data = new byte[100]; 
 			receivePacket = new DatagramPacket(data,data.length);
 		}
 	}
@@ -121,6 +121,7 @@ class DealWithClientRequest extends Thread{
 	private DatagramSocket sendReceiveSocket;
 	private DatagramPacket receivePacket, sendPacket;
 	private String type;
+	private static int actualSize = 0;
 	private Constants.ModeType printMode;
 	private Print printable;
 
@@ -129,7 +130,7 @@ class DealWithClientRequest extends Thread{
 		this.type = type;
 		this.printMode = consolePrintMode;
 		this.printable = new Print(printMode);
-		
+
 		try{
 			sendReceiveSocket = new DatagramSocket();
 		}catch(SocketException se){
@@ -187,8 +188,8 @@ class DealWithClientRequest extends Thread{
 
 		byte [] wholeBlock = null;
 		try{
-			wholeBlock = Files.readAllBytes(fn.toPath());
-		}catch(IOException ioe){
+			wholeBlock = readBytesFromFile(fn);
+		}catch(Exception ioe){
 			ioe.printStackTrace();
 			System.exit(1);
 		}
@@ -208,10 +209,10 @@ class DealWithClientRequest extends Thread{
 				sendPacket = new DatagramPacket(msg, msg.length, receivePacket.getAddress(), receivePacket.getPort());
 			}else{
 				System.arraycopy(wholeBlock, (blockNum-1)*512, msg, 4, wholeBlock.length % 512);
-				sendPacket = new DatagramPacket(msg, wholeBlock.length % 512, receivePacket.getAddress(), receivePacket.getPort());
+				sendPacket = new DatagramPacket(msg, (msg.length - (msg.length-wholeBlock.length % 512)) + 4, receivePacket.getAddress(), receivePacket.getPort());
 			}
 
-			System.out.println( "Creating DATA Packet to Send .. /n");
+			System.out.println( "Creating DATA Packet to Send .. \n");
 			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 			while(true) {
 				boolean temp = true;
@@ -237,8 +238,6 @@ class DealWithClientRequest extends Thread{
 
 
 			int clientBlockNum = (256*receivePacket.getData()[2])+receivePacket.getData()[3];
-			System.out.println(clientBlockNum);
-
 			if(clientBlockNum != blockNum){
 				System.out.println(new Exception("Client & Server block number missmatch!"));
 				System.exit(1);
@@ -275,8 +274,7 @@ class DealWithClientRequest extends Thread{
 		}
 
 		blockNum++;
-		receivePacket = new DatagramPacket(new byte[516], 516, 
-				receivePacket.getAddress(), receivePacket.getPort());
+		receivePacket = new DatagramPacket(new byte[516], 516, receivePacket.getAddress(), receivePacket.getPort());
 
 		while(blockSize >= 516){
 
@@ -287,11 +285,12 @@ class DealWithClientRequest extends Thread{
 				ioe.printStackTrace();
 				System.exit(1);
 			}
-			
+
 			printable.PrintReceivedPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
-			byte [] data = receivePacket.getData();
+			byte [] data = receivePacket.getData();            
 			int clientBlockNum = (256*data[2])+data[3];
 			if(data[0]==0 && data[1]==3 && blockNum == clientBlockNum){
+				actualSize += receivePacket.getLength()-4;
 				System.arraycopy(data, 4, receivedBytes, (blockNum-1)*512, receivePacket.getLength()-4);
 			}
 
@@ -308,29 +307,42 @@ class DealWithClientRequest extends Thread{
 				ioe.printStackTrace();
 				System.exit(1);
 			}
-			
+
 			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 			blockNum++;
 		}
-		
+
 		String Filepath = "./Server/"+(new String(filename));
 		File file = new File(Filepath);
 		try {
 			OutputStream os = new FileOutputStream(file);
-<<<<<<< HEAD
-<<<<<<< HEAD
-			os.write(receivedBytes, 0 , ((blockNum-2)*512)+(receivePacket.getLength()-4));
-=======
-			os.write(receivedBytes);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
-=======
-			os.write(receivedBytes);
->>>>>>> parent of de32d0e... Fixed Read and Write minor bug
+			os.write(receivedBytes, 0, actualSize);
 			os.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 		System.out.println("THREAD TERMINATED");
+	}
+
+	private static byte[] readBytesFromFile(File file) {
+		FileInputStream fileInputStream = null;
+		byte[] bytesArray = null;
+		try {
+			bytesArray = new byte[(int) file.length()];
+			fileInputStream = new FileInputStream(file);
+			fileInputStream.read(bytesArray);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (fileInputStream != null) {
+				try {
+					fileInputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return bytesArray;
 	}
 }
