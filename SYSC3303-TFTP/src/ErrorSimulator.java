@@ -250,10 +250,14 @@ public class ErrorSimulator {
 
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
+<<<<<<< HEAD
 		int mode;
 		printType = Constants.ModeType.VERBOSE;
 		int delay = 5000;	//default delay is 5 seconds
 		int blockNum = 8;	//initialized for compilation, always changed later;
+=======
+		int mode; String inputText;
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 		
 		System.out.println("Pick a mode: "
 				+ "\n[0]Lost data"
@@ -262,6 +266,7 @@ public class ErrorSimulator {
 				+ "\n[3]Lost ack"
 				+ "\n[4]Delay ack"
 				+ "\n[5]Duplicate ack"
+<<<<<<< HEAD
 				+ "\n[6]NORMAL MODE"
 				+ "\n[7]Lost RRQ"
 				+ "\n[8]Delay RRQ"
@@ -284,6 +289,19 @@ public class ErrorSimulator {
 		
 		
 		
+=======
+				+ "\n[6]Normal Mode\n");
+		mode = input.nextInt();
+
+		System.out.println("Enter v for verbose or q for quiet console output mode: ");
+		inputText = input.nextLine();
+		if (inputText.equals("v")) {
+			printType = Constants.ModeType.VERBOSE;
+		} else {
+			printType = Constants.ModeType.QUIET;
+		}
+		
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 		input.close();
 		ErrorSimulator sim = new ErrorSimulator(mode, delay, blockNum);
 		sim.passOnTFTP();
