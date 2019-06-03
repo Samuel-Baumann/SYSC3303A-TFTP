@@ -169,6 +169,7 @@ public class Client {
 				}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 				System.out.println("Client: packet created\n");
 				if (sendPort == 23) {
 					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
@@ -176,6 +177,10 @@ public class Client {
 					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				}
 
+=======
+				System.out.println("Client: packet created");
+				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 				System.out.println("Client: packet created");
 				printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
@@ -210,12 +215,16 @@ public class Client {
 
 					// Process the received datagram.
 <<<<<<< HEAD
+<<<<<<< HEAD
 					if (sendPort == 23) {
 						printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
 					} if (sendPort == 69) {
 						printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
 					}
 
+=======
+					printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 					printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, data);
 >>>>>>> parent of de32d0e... Fixed Read and Write minor bug
@@ -235,6 +244,7 @@ public class Client {
 
 					sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), (run==Mode.NORMAL)?receivePacket.getPort():23);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 					System.out.println("Packet created\n");
 					if (sendPort == 23) {
@@ -242,6 +252,11 @@ public class Client {
 					} if (sendPort == 69) {
 						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 					}
+=======
+					
+					System.out.println("Packet created");
+					printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, msg);
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 					
 					System.out.println("Packet created");
@@ -262,7 +277,11 @@ public class Client {
 				try {
 					OutputStream os = new FileOutputStream(file);
 <<<<<<< HEAD
+<<<<<<< HEAD
 					os.write(receivingArray, 0, ((blockNum-2)*512)+(receivePacket.getLength()-2));
+=======
+					os.write(receivingArray);
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 					os.write(receivingArray);
 >>>>>>> parent of de32d0e... Fixed Read and Write minor bug
@@ -393,11 +412,15 @@ public class Client {
 								(run==Mode.NORMAL)?receivePacket.getPort():23);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 						if (sendPort == 23) {
 							printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 						} if (sendPort == 69) {
 							printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 						}
+=======
+						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 >>>>>>> parent of de32d0e... Fixed Read and Write minor bug

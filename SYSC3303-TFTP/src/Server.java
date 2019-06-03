@@ -318,7 +318,11 @@ class DealWithClientRequest extends Thread{
 		try {
 			OutputStream os = new FileOutputStream(file);
 <<<<<<< HEAD
+<<<<<<< HEAD
 			os.write(receivedBytes, 0 , ((blockNum-2)*512)+(receivePacket.getLength()-4));
+=======
+			os.write(receivedBytes);
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 			os.write(receivedBytes);
 >>>>>>> parent of de32d0e... Fixed Read and Write minor bug

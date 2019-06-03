@@ -251,10 +251,14 @@ public class ErrorSimulator {
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
 <<<<<<< HEAD
+<<<<<<< HEAD
 		int mode;
 		printType = Constants.ModeType.VERBOSE;
 		int delay = 5000;	//default delay is 5 seconds
 		int blockNum = 8;	//initialized for compilation, always changed later;
+=======
+		int mode; String inputText;
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 =======
 		int mode; String inputText;
 >>>>>>> parent of de32d0e... Fixed Read and Write minor bug
@@ -301,6 +305,9 @@ public class ErrorSimulator {
 			printType = Constants.ModeType.QUIET;
 		}
 		
+<<<<<<< HEAD
+>>>>>>> parent of de32d0e... Fixed Read and Write minor bug
+=======
 >>>>>>> parent of de32d0e... Fixed Read and Write minor bug
 		input.close();
 		ErrorSimulator sim = new ErrorSimulator(mode, delay, blockNum);
