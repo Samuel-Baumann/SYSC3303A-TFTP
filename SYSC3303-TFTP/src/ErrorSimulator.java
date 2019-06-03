@@ -191,8 +191,8 @@ public class ErrorSimulator {
 
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
-		int mode; String inputText;
-		
+		int mode;
+		printType = Constants.ModeType.VERBOSE;
 		System.out.println("Pick a mode: "
 				+ "\n[0]Lost data"
 				+ "\n[1]Delay data"
@@ -201,16 +201,7 @@ public class ErrorSimulator {
 				+ "\n[4]Delay ack"
 				+ "\n[5]Duplicate ack"
 				+ "\n[6]Normal Mode\n");
-		mode = input.nextInt();
-
-		System.out.println("Enter v for verbose or q for quiet console output mode: ");
-		inputText = input.nextLine();
-		if (inputText.equals("v")) {
-			printType = Constants.ModeType.VERBOSE;
-		} else {
-			printType = Constants.ModeType.QUIET;
-		}
-		
+		mode = input.nextInt();	
 		input.close();
 		ErrorSimulator sim = new ErrorSimulator(mode);
 		sim.passOnTFTP();
