@@ -317,7 +317,7 @@ class DealWithClientRequest extends Thread{
 		File file = new File(Filepath);
 		try {
 			OutputStream os = new FileOutputStream(file);
-			os.write(receivedBytes);
+			os.write(receivedBytes, 0 , ((blockNum-2)*512)+(receivePacket.getLength()-4));
 			os.close();
 		} catch (IOException e) {
 			e.printStackTrace();

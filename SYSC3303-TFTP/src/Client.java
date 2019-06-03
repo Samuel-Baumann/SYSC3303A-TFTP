@@ -232,7 +232,7 @@ public class Client {
 				File file = new File(Filepath);
 				try {
 					OutputStream os = new FileOutputStream(file);
-					os.write(receivingArray);
+					os.write(receivingArray, 0, ((blockNum-2)*512)+(receivePacket.getLength()-2));
 					os.close();
 				} catch (IOException e) {
 					e.printStackTrace();
