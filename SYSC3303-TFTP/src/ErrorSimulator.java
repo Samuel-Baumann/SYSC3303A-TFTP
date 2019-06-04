@@ -20,26 +20,23 @@ public class ErrorSimulator {
 	private DatagramPacket sendPacket, receivePacket;
 	private DatagramSocket receiveSocket, sendSocket, sendReceiveSocket;
 	private int mode;
-	private int delay = 5000;
+	private float delay = 5000f;
+	private int type;
 	private int blockNum;
 	private static Constants.ModeType printType;
 	private Constants.ModeType printMode;
 	private Print printable;
 
-	public ErrorSimulator(int mode, int delay, int blockNum) {
+	public ErrorSimulator(int mode, float delay,int type,  int blockNum) {
 		this.mode = mode;
 		this.delay = delay;
+		this.type = type;
 		this.blockNum = blockNum;
 		this.printMode = printType;
 		this.printable = new Print(printMode);
+		
 		try {
-			// Construct a datagram socket and bind it to port 23
-			// on the local host machine. This socket will be used to
-			// receive UDP Datagram packets from clients.
 			receiveSocket = new DatagramSocket(23);
-			// Construct a datagram socket and bind it to any available
-			// port on the local host machine. This socket will be used to
-			// send and receive UDP Datagram packets from the server.
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException se) {
 			se.printStackTrace();
@@ -53,9 +50,7 @@ public class ErrorSimulator {
 		boolean send = true;
 		int target = blockNum;
 
-		for(;;) { // loop forever
-			// Construct a DatagramPacket for receiving packets up
-			// to 100 bytes long (the length of the byte array).
+		while(true) {
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
@@ -91,7 +86,7 @@ public class ErrorSimulator {
 							System.out.println("Delaying Packet from Client");
 							send = true;
 							dup = 1;
-							try {Thread.sleep(delay);}catch(InterruptedException ie) {ie.printStackTrace();}
+							try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
 						}
 					}
 					break;
@@ -119,7 +114,7 @@ public class ErrorSimulator {
 							System.out.println("Delaying Packet from Client");
 							send = true;
 							dup = 1;
-							try {Thread.sleep(delay);}catch(InterruptedException ie) {ie.printStackTrace();}
+							try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
 						}
 					}
 					break;
@@ -144,7 +139,7 @@ public class ErrorSimulator {
 						System.out.println("Delay RRQ");
 						send = true;
 						dup = 1;
-						try {Thread.sleep(delay);}catch(InterruptedException ie) {ie.printStackTrace();}
+						try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
 					}
 					break;
 				case 9:
@@ -167,7 +162,7 @@ public class ErrorSimulator {
 						System.out.println("Delay WRQ");
 						send = true;
 						dup = 1;
-						try {Thread.sleep(delay);}catch(InterruptedException ie) {ie.printStackTrace();}
+						try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
 					}
 					break;
 				case 12:
@@ -252,40 +247,89 @@ public class ErrorSimulator {
 		Scanner input = new Scanner(System.in);
 		int mode;
 		printType = Constants.ModeType.VERBOSE;
-		int delay = 5000;	//default delay is 5 seconds
+		//int delay = 5000;	//default delay is 5 seconds
+		float delay = -0.5f;
 		int blockNum = 8;	//initialized for compilation, always changed later;
+		int type;
 		
-		System.out.println("Pick a mode: "
-				+ "\n[0]Lost data"
-				+ "\n[1]Delay data"
-				+ "\n[2]Duplicate data"
-				+ "\n[3]Lost ack"
-				+ "\n[4]Delay ack"
-				+ "\n[5]Duplicate ack"
-				+ "\n[6]NORMAL MODE"
-				+ "\n[7]Lost RRQ"
-				+ "\n[8]Delay RRQ"
-				+ "\n[9]Duplicate RRQ"
-				+ "\n[10]Lost WRQ"
-				+ "\n[11]Delay WRQ"
-				+ "\n[12]Duplicate WRQ"
-				+ "\n[13]TO DO");
-		mode = input.nextInt();
+//		System.out.println("Pick a mode: "
+//				+ "\n[0]Lost data"
+//				+ "\n[1]Delay data"
+//				+ "\n[2]Duplicate data"
+//				+ "\n[3]Lost ack"
+//				+ "\n[4]Delay ack"
+//				+ "\n[5]Duplicate ack"
+//				+ "\n[6]NORMAL MODE"
+//				+ "\n[7]Lost RRQ"
+//				+ "\n[8]Delay RRQ"
+//				+ "\n[9]Duplicate RRQ"
+//				+ "\n[10]Lost WRQ"
+//				+ "\n[11]Delay WRQ"
+//				+ "\n[12]Duplicate WRQ"
+//				+ "\n[13]TO DO");
+//		mode = input.nextInt();
+//		
+//		if(mode == 1 || mode == 4 || mode == 8 || mode == 11) {
+//			System.out.println("Enter desired delay in milliseconds: ");
+//			delay = input.nextInt();
+//		}
 		
-		if(mode == 1 || mode == 4 || mode == 8 || mode == 11) {
-			System.out.println("Enter desired delay in milliseconds: ");
-			delay = input.nextInt();
+		// What type of error
+		while(true) {
+			System.out.println("What type of Error would you like: "
+					+ "\n\t[0] Lose"
+					+ "\n\t[1] Delay"
+					+ "\n\t[2] Duplicate");
+			mode = input.nextInt();
+			if(mode>=0 && mode<=2) break;
 		}
 		
-		if(mode < 6) {
-			System.out.println("Enter the block number to interfere with");
-			blockNum = input.nextInt();
+		// How long should the delay be
+		if(mode == 1) {
+			while(true) {
+				System.out.println("In seconds, how long should the delay be: (0.5 for half a second)");
+				try {
+					delay = input.nextFloat()*1000;
+					System.out.println("you send :"+delay);
+				}catch(Exception e) {
+					System.out.println("Error: not a float");
+				}
+				if(delay>0) break;
+			}
 		}
+		
+		// Which packet should error be applied to
+		while(true) {
+			System.out.println("What is the type of the packet: "
+					+ "\n\t[0] Read request"
+					+ "\n\t[1] Write request"
+					+ "\n\t[2] Data packet"
+					+ "\n\t[3] Acknowlegement");
+			type = input.nextInt();
+			if(type<=3 && type>=0)break;
+		}
+		
+		// What block number
+		if(type==2 || type == 3) {
+			while(true) {
+				System.out.println("What is the block number of the packet: ");
+				blockNum = input.nextInt();
+				if(blockNum>(65536*512) || blockNum<0) {
+					System.out.println("input is out of range");
+				}else {break;}
+			}
+		}
+		
+//		if(mode < 6) {
+//			System.out.println("Enter the block number to interfere with");
+//			blockNum = input.nextInt();
+//		}
 		
 		
 		
 		input.close();
-		ErrorSimulator sim = new ErrorSimulator(mode, delay, blockNum);
+		ErrorSimulator sim = new ErrorSimulator(mode, delay, type, blockNum);
 		sim.passOnTFTP();
 	}
 }
+
