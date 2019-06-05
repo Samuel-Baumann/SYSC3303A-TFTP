@@ -16,7 +16,7 @@ Members
 
   Gen Li - 100967203
  
-Iteration 2 - Completed On: Tuesday, May 28, 2019
+Iteration 3 - Completed On: Tuesday, June 4, 2019
 
 Deliverables:
 * README (this document)
@@ -27,11 +27,9 @@ Deliverables:
 * Code for each component + supplementary classes & constants
 
 Breakdown:
-* Code - Sirak and Henri: 
-	* Fixed prior Read and Write errors that existed in Iteration #1
-	* Added support for error simulation for both server and client side
-* Supporting Documentation, UML, Sequence and Use Case: Sam
-* State Machine diagrams: Gen
+* Code - Sirak, Henri and Sam (Client/Server by Sirak & Henri, Error Simulator Updates by all 3)
+* Supporting Documentation, Use Cases and State Machine Updates - Sam
+* Updated UML Class and Squence Diagrams - Gen
 
 Setup:
 To run, a user must have an instance of the client and server on 
@@ -45,4 +43,7 @@ main() function to select your mode, file locations and other customizable optio
 again follow the instruction in Client to send a shutdown command to the system.
 
 Known issue:
-Server can't shutdown by custom command.
+* Client doesn't timeout during error simulator interactions.
+* Corrupting packets doesn't work properly.
+
+
