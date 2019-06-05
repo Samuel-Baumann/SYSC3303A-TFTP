@@ -34,7 +34,7 @@ public class ErrorSimulator {
 		this.blockNum = blockNum;
 		this.printMode = printType;
 		this.printable = new Print(printMode);
-		
+
 		try {
 			receiveSocket = new DatagramSocket(23);
 			sendReceiveSocket = new DatagramSocket();
@@ -48,139 +48,66 @@ public class ErrorSimulator {
 		byte[] data;
 		int clientPort, serverThreadPort=-1, len, dup = 1, info;
 		boolean send = true;
-		int target = blockNum;
 
 		while(true) {
 			data = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 
 			System.out.println("Simulator: Waiting for packet.");
-			// Block until a datagram packet is received from receiveSocket.
 			try {
 				receiveSocket.receive(receivePacket);
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.exit(1);
 			}
-			
+
 			clientPort = receivePacket.getPort();
 			len = receivePacket.getLength();
-			int currBlockNum = receivePacket.getData()[2]*256 + receivePacket.getData()[3];
 			info = receivePacket.getData()[1];
+			int currBlockNum = -1;
+			if(info==3 || info==4) currBlockNum = receivePacket.getData()[2]*256 + receivePacket.getData()[3];
 			printable.PrintReceivedPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, receivePacket.getAddress(), clientPort, len, currBlockNum, data);
 
-			if(mode != 6) {
-				switch(mode) {
-				case 0:
-					if(info == 3) {
-						if(currBlockNum == target) {
-							System.out.println("Losing Packet from Client");
-							send = false;
-							dup = 1;
-						}
-					}
-					break;
-				case 1:
-					if(info == 3) {
-						if(currBlockNum == target) {
-							System.out.println("Delaying Packet from Client");
-							send = true;
-							dup = 1;
-							try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
-						}
-					}
-					break;
-				case 2:
-					if(info == 3) {
-						if(currBlockNum == target) {
-							System.out.println("Duplicate Packet from Client");
-							send = true;
-							dup = 2;
-						}
-					}
-					break;
-				case 3:
-					if(info == 4) {
-						if(currBlockNum == target) {
-							System.out.println("Losing Packet from Client");
-							send = false;
-							dup = 1;
-						}
-					}
-					break;
-				case 4:
-					if(info == 4) {
-						if(currBlockNum == target) {
-							System.out.println("Delaying Packet from Client");
-							send = true;
-							dup = 1;
-							try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
-						}
-					}
-					break;
-				case 5:
-					if(info == 4) {
-						if(currBlockNum == target) {
-							System.out.println("Duplicate Packet from Client");
-							send = true;
-							dup = 2;
-						}
-					}
-					break;
-				case 7:
-					if(info == 1) {
-						System.out.println("Lose RRQ");
-						send = false;
-						dup = 1;
-					}
-					break;
-				case 8:
-					if(info == 1) {
-						System.out.println("Delay RRQ");
-						send = true;
-						dup = 1;
-						try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
-					}
-					break;
-				case 9:
-					if(info == 1) {
-						System.out.println("Duplicate RRQ");
-						send = true;
-						dup = 2;
-					}
-					break;
-				case 10:
-					if(info == 2) {
-						System.out.println("Lose WRQ");
-						send = false;
-						dup = 1;
 
-					}
-					break;
-				case 11:
-					if(info == 2) {
-						System.out.println("Delay WRQ");
-						send = true;
-						dup = 1;
-						try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
-					}
-					break;
-				case 12:
-					if(info == 2) {
-						System.out.println("Duplicate WRQ");
-						send = true;
-						dup = 2;
-					}
-					break;
+			switch(mode) {
+			case 0:
+				System.out.println("******Losing Mode********* type: "+type+" info: "+info+" currBlockNum: "+currBlockNum+" blockNum: "+blockNum);//Test
+				if((info == type) && currBlockNum==blockNum) {// if it's of type packet and it has the same blockNumber than lose it
+					System.out.println("Losing Packet from Client");
+					send = false;
+					dup = 1;
 				}
-				
+				break;
+			case 1:
+				if(info == type && currBlockNum==blockNum) {
+					System.out.println("Delaying Packet from Client");
+					send = true;
+					dup = 1;
+					try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
+				}
+				break;
+			case 2:
+				if(info == type && currBlockNum == blockNum) {
+					System.out.println("Duplicate Packet from Client");
+					send = true;
+					dup = 2;
+				}
+				break;
+			case 3:
+				if(info == type && currBlockNum == blockNum) {
+					System.out.println("Corrupting Packet from Client");
+					send = true;
+					dup = 2;
+				}
 			}
+
+
 
 			for(int x = 0; x<dup; x++) {
 				if(send) {
 					sendPacket = new DatagramPacket(data, len,
 							receivePacket.getAddress(), (serverThreadPort==-1)?69:serverThreadPort);
-					
+
 					len = sendPacket.getLength();
 					printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
 
@@ -217,9 +144,9 @@ public class ErrorSimulator {
 
 			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
 					receivePacket.getAddress(), clientPort);
-			
+
 			len = sendPacket.getLength();
-			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
+			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
 			// Send the datagram packet to the client via a new socket.
 			try {
 				// Construct a new datagram socket and bind it to any port
@@ -231,6 +158,9 @@ public class ErrorSimulator {
 				System.exit(1);
 			}
 
+			
+			
+			
 			try {
 				sendSocket.send(sendPacket);
 			} catch (IOException e) {
@@ -247,43 +177,20 @@ public class ErrorSimulator {
 		Scanner input = new Scanner(System.in);
 		int mode;
 		printType = Constants.ModeType.VERBOSE;
-		//int delay = 5000;	//default delay is 5 seconds
 		float delay = -0.5f;
-		int blockNum = 8;	//initialized for compilation, always changed later;
+		int blockNum = -1;	//initialized for compilation, always changed later;
 		int type;
-		
-//		System.out.println("Pick a mode: "
-//				+ "\n[0]Lost data"
-//				+ "\n[1]Delay data"
-//				+ "\n[2]Duplicate data"
-//				+ "\n[3]Lost ack"
-//				+ "\n[4]Delay ack"
-//				+ "\n[5]Duplicate ack"
-//				+ "\n[6]NORMAL MODE"
-//				+ "\n[7]Lost RRQ"
-//				+ "\n[8]Delay RRQ"
-//				+ "\n[9]Duplicate RRQ"
-//				+ "\n[10]Lost WRQ"
-//				+ "\n[11]Delay WRQ"
-//				+ "\n[12]Duplicate WRQ"
-//				+ "\n[13]TO DO");
-//		mode = input.nextInt();
-//		
-//		if(mode == 1 || mode == 4 || mode == 8 || mode == 11) {
-//			System.out.println("Enter desired delay in milliseconds: ");
-//			delay = input.nextInt();
-//		}
-		
-		// What type of error
+
 		while(true) {
 			System.out.println("What type of Error would you like: "
 					+ "\n\t[0] Lose"
 					+ "\n\t[1] Delay"
-					+ "\n\t[2] Duplicate");
+					+ "\n\t[2] Duplicate"
+					+ "\n\t[3] Corrupt");
 			mode = input.nextInt();
 			if(mode>=0 && mode<=2) break;
 		}
-		
+
 		// How long should the delay be
 		if(mode == 1) {
 			while(true) {
@@ -297,20 +204,20 @@ public class ErrorSimulator {
 				if(delay>0) break;
 			}
 		}
-		
+
 		// Which packet should error be applied to
 		while(true) {
 			System.out.println("What is the type of the packet: "
-					+ "\n\t[0] Read request"
-					+ "\n\t[1] Write request"
-					+ "\n\t[2] Data packet"
-					+ "\n\t[3] Acknowlegement");
+					+ "\n\t[1] Read request"
+					+ "\n\t[2] Write request"
+					+ "\n\t[3] Data packet"
+					+ "\n\t[4] Acknowlegement");
 			type = input.nextInt();
-			if(type<=3 && type>=0)break;
+			if(type<=4 && type>=1)break;
 		}
-		
+
 		// What block number
-		if(type==2 || type == 3) {
+		if(type==3 || type == 4) {
 			while(true) {
 				System.out.println("What is the block number of the packet: ");
 				blockNum = input.nextInt();
@@ -319,14 +226,8 @@ public class ErrorSimulator {
 				}else {break;}
 			}
 		}
-		
-//		if(mode < 6) {
-//			System.out.println("Enter the block number to interfere with");
-//			blockNum = input.nextInt();
-//		}
-		
-		
-		
+
+
 		input.close();
 		ErrorSimulator sim = new ErrorSimulator(mode, delay, type, blockNum);
 		sim.passOnTFTP();
