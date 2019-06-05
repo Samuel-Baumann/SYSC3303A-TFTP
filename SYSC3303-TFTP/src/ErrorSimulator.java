@@ -145,8 +145,7 @@ public class ErrorSimulator {
 			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
 					receivePacket.getAddress(), clientPort);
 
-			len = sendPacket.getLength();
-			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
+			
 			// Send the datagram packet to the client via a new socket.
 			try {
 				// Construct a new datagram socket and bind it to any port
@@ -158,8 +157,41 @@ public class ErrorSimulator {
 				System.exit(1);
 			}
 
+			info = receivePacket.getData()[1];
+			switch(mode) {
+			case 0:
+				System.out.println("******Losing Mode********* type: "+type+" info: "+info+" currBlockNum: "+currBlockNum+" blockNum: "+blockNum);//Test
+				if((info == type) && currBlockNum==blockNum) {// if it's of type packet and it has the same blockNumber than lose it
+					System.out.println("Losing Packet from Client");
+					send = false;
+					dup = 1;
+				}
+				break;
+			case 1:
+				if(info == type && currBlockNum==blockNum) {
+					System.out.println("Delaying Packet from Client");
+					send = true;
+					dup = 1;
+					try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
+				}
+				break;
+			case 2:
+				if(info == type && currBlockNum == blockNum) {
+					System.out.println("Duplicate Packet from Client");
+					send = true;
+					dup = 2;
+				}
+				break;
+			case 3:
+				if(info == type && currBlockNum == blockNum) {
+					System.out.println("Corrupting Packet from Client");
+					send = true;
+					dup = 2;
+				}
+			}
 			
-			
+			len = sendPacket.getLength();
+			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
 			
 			try {
 				sendSocket.send(sendPacket);
