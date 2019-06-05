@@ -246,6 +246,12 @@ public class Client {
 
 				String Filepath = "./Client/"+(new String(fn));
 				File file = new File(Filepath);
+				
+				int i = 0;
+				while(file.exists()) {
+					file = new File(Filepath+""+"("+(++i)+")");
+				}
+				
 				try {
 					OutputStream os = new FileOutputStream(file);
 					os.write(receivingArray, 0, actualSize);

@@ -314,6 +314,12 @@ class DealWithClientRequest extends Thread{
 
 		String Filepath = "./Server/"+(new String(filename));
 		File file = new File(Filepath);
+		
+		int i = 0;
+		while(file.exists()) {
+			file = new File(Filepath+""+"("+(++i)+")");
+		}
+		
 		try {
 			OutputStream os = new FileOutputStream(file);
 			os.write(receivedBytes, 0, actualSize);
