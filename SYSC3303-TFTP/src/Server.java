@@ -20,6 +20,13 @@ public class Server{
 	private static Constants.ModeType printType;
 	private Constants.ModeType printMode;
 	private Print printable;
+	
+	private static final String PACKET_ERROR_01 = "SERVER ERROR OCCURED: File not found";
+	private static final String PACKET_ERROR_02 = "SERVER ERROR OCCURED: Access violation";
+	private static final String PACKET_ERROR_03 = "SERVER ERROR OCCURED: Disk full or allocation exceeded";
+	private static final String PACKET_ERROR_04 = "SERVER ERROR OCCURED: Illegal TFTP operation!";
+	private static final String PACKET_ERROR_05 = "SERVER ERROR OCCURED: Unknown transfer ID";
+	private static final String PACKET_ERROR_06 = "SERVER ERROR OCCURED: File already exists";
 
 	class Listener extends Thread{
 		private AtomicBoolean isDone; Scanner in = new Scanner(System.in);
