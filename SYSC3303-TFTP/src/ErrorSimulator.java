@@ -5,7 +5,7 @@ import java.net.SocketException;
 import java.util.Scanner;
 
 /** 
- * @author Sirak Berhane, Henri Umba
+ * @author Sirak Berhane, Henri Umba, Samuel Baumann
  * 
  * ErrorSimulator.java
  * This class is the beginnings of an error simulator for a simple TFTP server 
@@ -23,15 +23,24 @@ public class ErrorSimulator {
 	private float delay = 5000f;
 	private int type;
 	private int blockNum;
+	private int userCorrupt;
+	private byte userByte1, userByte2;
+	private String newFileName;
+	private boolean octetCorrupt;
 	private static Constants.ModeType printType;
 	private Constants.ModeType printMode;
 	private Print printable;
 
-	public ErrorSimulator(int mode, float delay,int type,  int blockNum) {
+	public ErrorSimulator(int mode, float delay,int type,  int blockNum, int userCorrupt, byte userByte1, byte userByte2, String newFileName, boolean octetCorrupt) {
 		this.mode = mode;
 		this.delay = delay;
 		this.type = type;
 		this.blockNum = blockNum;
+		this.userCorrupt = userCorrupt;
+		this.userByte1 = userByte1;
+		this.userByte2 = userByte2;
+		this.newFileName = newFileName;
+		this.octetCorrupt = octetCorrupt;
 		this.printMode = printType;
 		this.printable = new Print(printMode);
 
@@ -72,15 +81,15 @@ public class ErrorSimulator {
 			switch(mode) {
 			case 0:
 				System.out.println("******Losing Mode********* type: "+type+" info: "+info+" currBlockNum: "+currBlockNum+" blockNum: "+blockNum);//Test
-				if((info == type) && currBlockNum==blockNum) {// if it's of type packet and it has the same blockNumber than lose it
-					System.out.println("Losing Packet from Client");
+				if((info == type) && currBlockNum==blockNum) {// if it's of type packet and it has the same blockNumber then lose it
+					System.out.println("Losing Packet");
 					send = false;
 					dup = 1;
 				}
 				break;
 			case 1:
 				if(info == type && currBlockNum==blockNum) {
-					System.out.println("Delaying Packet from Client");
+					System.out.println("Delaying Packet");
 					send = true;
 					dup = 1;
 					try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
@@ -88,16 +97,28 @@ public class ErrorSimulator {
 				break;
 			case 2:
 				if(info == type && currBlockNum == blockNum) {
-					System.out.println("Duplicate Packet from Client");
+					System.out.println("Duplicate Packet");
 					send = true;
 					dup = 2;
 				}
 				break;
 			case 3:
 				if(info == type && currBlockNum == blockNum) {
-					System.out.println("Corrupting Packet from Client");
+					System.out.println("Corrupting Packet");
+					if(userCorrupt == 1) {
+						receivePacket.getData()[0] = userByte1;
+						receivePacket.getData()[1] = userByte2;
+					}else if(userCorrupt == 2){	//must be read or write
+						byte[] newFN = newFileName.getBytes();
+						int currPosition = 2;
+						while(receivePacket.getData()[currPosition] != 0) {	//replace filename
+							receivePacket.getData()[currPosition] = newFN[currPosition - 2];
+						}
+					}else if(userCorrupt == 3) { //must be read or write
+						receivePacket.getData()[receivePacket.getLength() - 2] = 3; //just arbitrarily mess up the usual OCTET format
+					}
 					send = true;
-					dup = 2;
+					dup = 1;
 				}
 			}
 
@@ -162,14 +183,14 @@ public class ErrorSimulator {
 			case 0:
 				System.out.println("******Losing Mode********* type: "+type+" info: "+info+" currBlockNum: "+currBlockNum+" blockNum: "+blockNum);//Test
 				if((info == type) && currBlockNum==blockNum) {// if it's of type packet and it has the same blockNumber than lose it
-					System.out.println("Losing Packet from Client");
+					System.out.println("Losing Packet");
 					send = false;
 					dup = 1;
 				}
 				break;
 			case 1:
 				if(info == type && currBlockNum==blockNum) {
-					System.out.println("Delaying Packet from Client");
+					System.out.println("Delaying Packet");
 					send = true;
 					dup = 1;
 					try {Thread.sleep((int)delay);}catch(InterruptedException ie) {ie.printStackTrace();}
@@ -177,16 +198,28 @@ public class ErrorSimulator {
 				break;
 			case 2:
 				if(info == type && currBlockNum == blockNum) {
-					System.out.println("Duplicate Packet from Client");
+					System.out.println("Duplicate Packet");
 					send = true;
 					dup = 2;
 				}
 				break;
 			case 3:
 				if(info == type && currBlockNum == blockNum) {
-					System.out.println("Corrupting Packet from Client");
+					System.out.println("Corrupting Packet");
+					if(userCorrupt == 1) {
+						receivePacket.getData()[0] = userByte1;
+						receivePacket.getData()[1] = userByte2;
+					}else if(userCorrupt == 2){	//must be read or write
+						byte[] newFN = newFileName.getBytes();
+						int currPosition = 2;
+						while(receivePacket.getData()[currPosition] != 0) {	//replace filename
+							receivePacket.getData()[currPosition] = newFN[currPosition - 2];
+						}
+					}else if(userCorrupt == 3) { //must be read or write
+						receivePacket.getData()[receivePacket.getLength() - 2] = 3; //just arbitrarily mess up the usual OCTET format
+					}
 					send = true;
-					dup = 2;
+					dup = 1;
 				}
 			}
 			
@@ -212,6 +245,10 @@ public class ErrorSimulator {
 		float delay = -0.5f;
 		int blockNum = -1;	//initialized for compilation, always changed later;
 		int type;
+		int userCorrupt = -1;
+		byte userByte1 = -1, userByte2 = -1;
+		String newFileName = "";
+		boolean octetCorrupt = false;
 
 		while(true) {
 			System.out.println("What type of Error would you like: "
@@ -220,7 +257,7 @@ public class ErrorSimulator {
 					+ "\n\t[2] Duplicate"
 					+ "\n\t[3] Corrupt");
 			mode = input.nextInt();
-			if(mode>=0 && mode<=2) break;
+			if(mode>=0 && mode<=3) break;
 		}
 
 		// How long should the delay be
@@ -229,7 +266,7 @@ public class ErrorSimulator {
 				System.out.println("In seconds, how long should the delay be: (0.5 for half a second)");
 				try {
 					delay = input.nextFloat()*1000;
-					System.out.println("you send :"+delay);
+					System.out.println("you send: "+delay);
 				}catch(Exception e) {
 					System.out.println("Error: not a float");
 				}
@@ -247,6 +284,30 @@ public class ErrorSimulator {
 			type = input.nextInt();
 			if(type<=4 && type>=1)break;
 		}
+		
+		if(mode == 3) {
+			while(true) {
+				System.out.println("What part would you like to corrupt? (1 - opcode, 2 - Filename, 3 - Mode (2-3 for RRQ WRQ only");
+				userCorrupt = input.nextInt();
+				if(userCorrupt < 1 || userCorrupt > 3) {
+					System.out.println("input is out of range");
+				}else if(userCorrupt == 1) {
+					System.out.println("Enter the first byte for the new Opcode");
+					userByte1 = input.nextByte();
+					System.out.println("Enter the second byte for the new Opcode");
+					userByte2 = input.nextByte();
+					break;
+				}else if(userCorrupt == 2) {
+					System.out.println("Enter the new filename");
+					newFileName = input.nextLine();
+					break;
+				}else if(userCorrupt == 3) {
+					System.out.println("interfering with Octet string mode");
+					octetCorrupt = true;
+					break;
+				}
+			}
+		}
 
 		// What block number
 		if(type==3 || type == 4) {
@@ -261,8 +322,7 @@ public class ErrorSimulator {
 
 
 		input.close();
-		ErrorSimulator sim = new ErrorSimulator(mode, delay, type, blockNum);
+		ErrorSimulator sim = new ErrorSimulator(mode, delay, type, blockNum, userCorrupt, userByte1, userByte2, newFileName, octetCorrupt);
 		sim.passOnTFTP();
 	}
 }
-
