@@ -40,7 +40,7 @@ public class ErrorSimulator {
 		this.userByte1 = userByte1;
 		this.userByte2 = userByte2;
 		this.newFileName = newFileName;
-		this.octetCorrupt = octetCorrupt;
+		this.setOctetCorrupt(octetCorrupt);
 		this.printMode = printType;
 		this.printable = new Print(printMode);
 
@@ -238,6 +238,14 @@ public class ErrorSimulator {
 		} // end of loop
 	}
 
+	public boolean isOctetCorrupt() {
+		return octetCorrupt;
+	}
+
+	public void setOctetCorrupt(boolean octetCorrupt) {
+		this.octetCorrupt = octetCorrupt;
+	}
+
 	public static void main(String args[]){
 		Scanner input = new Scanner(System.in);
 		int mode;
@@ -319,7 +327,6 @@ public class ErrorSimulator {
 				}else {break;}
 			}
 		}
-
 
 		input.close();
 		ErrorSimulator sim = new ErrorSimulator(mode, delay, type, blockNum, userCorrupt, userByte1, userByte2, newFileName, octetCorrupt);

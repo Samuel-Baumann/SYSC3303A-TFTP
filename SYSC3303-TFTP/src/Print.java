@@ -36,7 +36,7 @@ public class Print {
 			System.out.println("To " + serverReciever.getServerName() + ": " + address);
 			System.out.println("Destination " + serverReciever.getServerName() + " port: " + port);
 			System.out.println("Length: " + length);
-			System.out.println("Packet Type: " + getPacketType(data));
+			System.out.println("Packet Type: " + Constants.getPacketType(data));
 			System.out.println("Block Number: " + blockNumber);
 			System.out.println("Containing (String): " + new String(data,0,length));
 			String byteReceivedData = "|";
@@ -63,7 +63,7 @@ public class Print {
 			System.out.println("From " + serverSender.getServerName() + ": " + address);
 			System.out.println(serverSender.getServerName() + " port: " + port);
 			System.out.println("Length: " + length);
-			System.out.println("Packet Type: " + getPacketType(data));
+			System.out.println("Packet Type: " + Constants.getPacketType(data));
 			System.out.println("Block Number: " + blockNumber);
 			System.out.println("Containing (String): " + new String(data,0,length));
 			String byteReceivedData = "|";
@@ -72,29 +72,5 @@ public class Print {
 			}
 			System.out.println("Containing (byte): " + byteReceivedData + "\n");
 		}
-	}
-
-	/**
-	 * Return string code of packet type
-	 * 
-	 * @param data packet data
-	 * @return string packet type code
-	 */
-	private String getPacketType(byte[] data) {
-		String packetType = "";
-		if (data[0] != 0) {
-			packetType = Constants.PacketString.ERROR.getPacketStringType();
-		} else if (data[1] == 1) {
-			packetType = Constants.PacketString.RRQ.getPacketStringType();
-		} else if (data[1] == 2) {
-			packetType = Constants.PacketString.WRQ.getPacketStringType();
-		} else if (data[1] == 3) {
-			packetType = Constants.PacketString.DATA.getPacketStringType();
-		} else if (data[1] == 4) {
-			packetType = Constants.PacketString.ACK.getPacketStringType();
-		} else {
-			packetType = Constants.PacketString.ERROR.getPacketStringType();
-		}
-		return packetType;
 	}
 }

@@ -20,15 +20,7 @@ public class Server{
 	private static Constants.ModeType printType;
 	private Constants.ModeType printMode;
 	private Print printable;
-	
-	private static final String PACKET_ERROR_01 = "SERVER ERROR OCCURED: File not found";
-	private static final String PACKET_ERROR_02 = "SERVER ERROR OCCURED: Access violation";
-	private static final String PACKET_ERROR_03 = "SERVER ERROR OCCURED: Disk full or allocation exceeded";
-	private static final String PACKET_ERROR_04 = "SERVER ERROR OCCURED: Illegal TFTP operation!";
-	private static final String PACKET_ERROR_05 = "SERVER ERROR OCCURED: Unknown transfer ID";
-	private static final String PACKET_ERROR_06 = "SERVER ERROR OCCURED: File already exists";
-
-	class Listener extends Thread{
+	public class Listener extends Thread {
 		private AtomicBoolean isDone; Scanner in = new Scanner(System.in);
 		Listener(AtomicBoolean bool){
 			this.isDone = bool;
@@ -49,7 +41,7 @@ public class Server{
 	Thread listen;
 	AtomicBoolean quitflag;
 
-	public Server(){
+	public Server() {
 		this.printMode = printType;
 		this.printable = new Print(printMode);
 
@@ -63,7 +55,7 @@ public class Server{
 		listen = new Listener(quitflag);
 	}
 
-	public void receivingNewPacket(){
+	public void receivingNewPacket() {
 		listen.start();
 
 		while(true){
@@ -105,7 +97,7 @@ public class Server{
 
 	// Processes the type of the request
 	// If it is anything besides read/write it quites
-	private String processingReadOrWrite(byte [] data){
+	private String processingReadOrWrite(byte [] data) {
 		if(data[0]!=0 || (data[1]!=1 && data[1]!=2)){
 			System.out.print(new Exception("ERROR: unknown request type."));
 			System.exit(1);
@@ -124,7 +116,7 @@ public class Server{
 }
 
 // New Thread which deals with Client Request
-class DealWithClientRequest extends Thread{
+class DealWithClientRequest extends Thread {
 	private DatagramSocket sendReceiveSocket;
 	private DatagramPacket receivePacket, sendPacket;
 	private String type;
@@ -146,7 +138,7 @@ class DealWithClientRequest extends Thread{
 		}
 	}
 
-	public String[] getFilenameAndMode(){
+	public String[] getFilenameAndMode() {
 		byte [] data = receivePacket.getData();
 		String [] temp = new String [2];
 		int len = receivePacket.getLength();
@@ -185,7 +177,7 @@ class DealWithClientRequest extends Thread{
 		else if(type.equals("WRITE")) communicateWriteRequest(information[0]);
 	}
 
-	public void communicateReadRequest(String filename){
+	public void communicateReadRequest(String filename) {
 		File fn = new File("./Server/"+filename);
 
 		if(!fn.exists()){
@@ -254,7 +246,7 @@ class DealWithClientRequest extends Thread{
 		System.out.println("THREAD TERMINATED");
 	}
 
-	public void communicateWriteRequest(String filename){
+	public void communicateWriteRequest(String filename) {
 		byte [] receivedBytes = new byte[65535 * 512];
 		//int receivedBytesIndex = 0;
 		int blockNum = 0;
