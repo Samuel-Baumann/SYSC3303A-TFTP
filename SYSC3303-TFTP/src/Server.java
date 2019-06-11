@@ -198,15 +198,17 @@ class DealWithClientRequest extends Thread {
 		}
 
 		// IP specific access, if IP is incorrect --> Access Error is triggered
-		if (!((receivePacket.getAddress().toString().equals("/172.17.46.195") && filename.equals("secureFile")))) {
-			sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
-			try{
-				sendReceiveSocket.send(sendPacket);
-			}catch(IOException ioe){
-				ioe.printStackTrace();
+		if (filename.equals("secureFile")) {
+			if (!(receivePacket.getAddress().toString().equals("/172.17.46.195"))){
+				sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+				try{
+					sendReceiveSocket.send(sendPacket);
+				}catch(IOException ioe){
+					ioe.printStackTrace();
+					System.exit(1);
+				}
 				System.exit(1);
 			}
-			System.exit(1);
 		}
 
 		byte [] wholeBlock = null;
@@ -292,15 +294,17 @@ class DealWithClientRequest extends Thread {
 		}
 
 		// IP specific access, if IP is incorrect --> Access Error is triggered
-		if (!((receivePacket.getAddress().toString().equals("/172.17.46.195") && filename.equals("secureFile")))) {
-			sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
-			try{
-				sendReceiveSocket.send(sendPacket);
-			}catch(IOException ioe){
-				ioe.printStackTrace();
+		if (filename.equals("secureFile")) {
+			if (!(receivePacket.getAddress().toString().equals("/172.17.46.195"))){
+				sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+				try{
+					sendReceiveSocket.send(sendPacket);
+				}catch(IOException ioe){
+					ioe.printStackTrace();
+					System.exit(1);
+				}
 				System.exit(1);
 			}
-			System.exit(1);
 		}
 
 		byte [] receivedBytes = new byte[65535 * 512];
