@@ -154,6 +154,14 @@ class DealWithClientRequest extends Thread {
 		}
 
 		if(x==len || x==2) {
+			sendPacket = new DatagramPacket(Constants.formType_04_ErrorPacket(), Constants.formType_04_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
 			System.out.println(new Exception("Filename not provided Or data not properly formatted"));
 			System.exit(1);
 		}
@@ -165,6 +173,14 @@ class DealWithClientRequest extends Thread {
 		}
 
 		if(y==x+1 || y==len){
+			sendPacket = new DatagramPacket(Constants.formType_04_ErrorPacket(), Constants.formType_04_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
 			System.out.println(new Exception("Mode not provided Or data not properly formatted"));
 			System.exit(1);
 		}
@@ -187,6 +203,7 @@ class DealWithClientRequest extends Thread {
 
 		if(!fn.exists()){
 			sendPacket = new DatagramPacket(Constants.formType_01_ErrorPacket(), Constants.formType_01_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 			try{
 				sendReceiveSocket.send(sendPacket);
 			}catch(IOException ioe){
@@ -201,6 +218,7 @@ class DealWithClientRequest extends Thread {
 		if (filename.equals("secureFile")) {
 			if (!(receivePacket.getAddress().toString().equals("/172.17.46.195"))){
 				sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				try{
 					sendReceiveSocket.send(sendPacket);
 				}catch(IOException ioe){
@@ -265,6 +283,7 @@ class DealWithClientRequest extends Thread {
 			int clientBlockNum = (256*receivePacket.getData()[2])+receivePacket.getData()[3];
 			if(clientBlockNum != blockNum){
 				sendPacket = new DatagramPacket(Constants.formType_05_ErrorPacket(), Constants.formType_05_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				try{
 					sendReceiveSocket.send(sendPacket);
 				}catch(IOException ioe){
@@ -284,6 +303,7 @@ class DealWithClientRequest extends Thread {
 
 		if (file.exists()) {
 			sendPacket = new DatagramPacket(Constants.formType_06_ErrorPacket(), Constants.formType_06_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 			try{
 				sendReceiveSocket.send(sendPacket);
 			}catch(IOException ioe){
@@ -297,6 +317,7 @@ class DealWithClientRequest extends Thread {
 		if (filename.equals("secureFile")) {
 			if (!(receivePacket.getAddress().toString().equals("/172.17.46.195"))){
 				sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				try{
 					sendReceiveSocket.send(sendPacket);
 				}catch(IOException ioe){
@@ -377,6 +398,7 @@ class DealWithClientRequest extends Thread {
 			os.close();
 		} catch (IOException e) {
 			sendPacket = new DatagramPacket(Constants.formType_03_ErrorPacket(), Constants.formType_03_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 			try{
 				sendReceiveSocket.send(sendPacket);
 			}catch(IOException ioe){
