@@ -109,6 +109,15 @@ public class Constants {
 		return packetType;
 	}
 	
+	// --------------- ERROR PACKET FORMAT ----------------------
+	//															|
+	//		  2 bytes     2 bytes      string    1 byte	    	|
+	//        -----------------------------------------			|
+	//       | Opcode |  ErrorCode |   ErrMsg   |   0  |		|
+	//        -----------------------------------------			|
+	//															|
+	// ----------------------------------------------------------
+	
 	public static byte[] formType_01_ErrorPacket() {
 		byte[] errorPacket_01 = new byte[5+PACKET_ERROR_01.length()];
 		errorPacket_01[0] = 0;

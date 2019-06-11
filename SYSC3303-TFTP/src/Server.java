@@ -96,10 +96,15 @@ public class Server{
 	}
 
 	// Processes the type of the request
-	// If it is anything besides read/write it quites
+	// If it is anything besides read/write it quits
 	private String processingReadOrWrite(byte [] data) {
 		if(data[0]!=0 || (data[1]!=1 && data[1]!=2)){
-			System.out.print(new Exception("ERROR: unknown request type."));
+			receivePacket = new DatagramPacket(Constants.formType_04_ErrorPacket(), Constants.formType_04_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			try {
+				receiveSocket.send(receivePacket);
+			} catch (IOException e) {
+				System.out.println("Server: Error occured when sending a packet! ERROR INFO --> " + e.getMessage());
+			}
 			System.exit(1);
 		}
 
@@ -181,7 +186,26 @@ class DealWithClientRequest extends Thread {
 		File fn = new File("./Server/"+filename);
 
 		if(!fn.exists()){
-			System.out.println(new Exception("The file: temp/"+filename+" doesn't exists!"));
+			sendPacket = new DatagramPacket(Constants.formType_01_ErrorPacket(), Constants.formType_01_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
+			System.out.println("The file: temp/"+filename+" doesn't exists!");
+			System.exit(1);
+		}
+
+		// IP specific access, if IP is incorrect --> Access Error is triggered
+		if (!((receivePacket.getAddress().toString().equals("/172.17.46.195") && filename.equals("secureFile")))) {
+			sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
 			System.exit(1);
 		}
 
@@ -238,8 +262,14 @@ class DealWithClientRequest extends Thread {
 
 			int clientBlockNum = (256*receivePacket.getData()[2])+receivePacket.getData()[3];
 			if(clientBlockNum != blockNum){
-				System.out.println(new Exception("Client & Server block number missmatch!"));
-				System.exit(1);
+				sendPacket = new DatagramPacket(Constants.formType_05_ErrorPacket(), Constants.formType_05_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+				try{
+					sendReceiveSocket.send(sendPacket);
+				}catch(IOException ioe){
+					ioe.printStackTrace();
+					System.exit(1);
+				}
+				//	System.exit(1);
 			}
 			blockNum++;
 		}
@@ -247,6 +277,32 @@ class DealWithClientRequest extends Thread {
 	}
 
 	public void communicateWriteRequest(String filename) {
+		String Filepath = "./Server/"+(new String(filename));
+		File file = new File(Filepath);
+
+		if (file.exists()) {
+			sendPacket = new DatagramPacket(Constants.formType_06_ErrorPacket(), Constants.formType_06_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
+			System.exit(1);
+		}
+
+		// IP specific access, if IP is incorrect --> Access Error is triggered
+		if (!((receivePacket.getAddress().toString().equals("/172.17.46.195") && filename.equals("secureFile")))) {
+			sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
+			System.exit(1);
+		}
+
 		byte [] receivedBytes = new byte[65535 * 512];
 		//int receivedBytesIndex = 0;
 		int blockNum = 0;
@@ -311,20 +367,18 @@ class DealWithClientRequest extends Thread {
 			blockNum++;
 		}
 
-		String Filepath = "./Server/"+(new String(filename));
-		File file = new File(Filepath);
-		
-		int i = 0;
-		while(file.exists()) {
-			file = new File(Filepath+""+"("+(++i)+")");
-		}
-		
 		try {
 			OutputStream os = new FileOutputStream(file);
 			os.write(receivedBytes, 0, actualSize);
 			os.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			sendPacket = new DatagramPacket(Constants.formType_03_ErrorPacket(), Constants.formType_03_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+			try{
+				sendReceiveSocket.send(sendPacket);
+			}catch(IOException ioe){
+				ioe.printStackTrace();
+				System.exit(1);
+			}
 			System.exit(1);
 		}
 		System.out.println("THREAD TERMINATED");

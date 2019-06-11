@@ -69,12 +69,6 @@ public class Client {
 		// However, in the project, the following will be useful, except
 		// that test vs. normal will be entered by the user.
 		run = Mode.TEST; // change to NORMAL to send directly to server
-
-		//		  2 bytes     2 bytes      string    1 byte
-		//        -----------------------------------------
-		//       | Opcode |  ErrorCode |   ErrMsg   |   0  |
-		//        -----------------------------------------
-
 		while (running) {
 			System.out.println("enter a v for Verbose mode or a q for quiet mode: ");
 			s = scan.next();
@@ -220,32 +214,34 @@ public class Client {
 					actualSize += size;
 					System.arraycopy(data, 4, receivingArray, (blockNum-1)*512, size);
 
-					System.out.println("Creating packet . . .");
-
-					msg = new byte[4];
-					msg[0] = 0;
-					msg[1] = 4;
-					msg[2] = (byte) ((int) blockNum/256);
-					msg[3] = (byte) ((int) blockNum%256);
-
-					len = msg.length;
-					blockNum++;
-
-					sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), (run==Mode.NORMAL)?receivePacket.getPort():23);
-
-					System.out.println("Packet created\n");
-					if (sendPort == 23) {
-						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
-					} if (sendPort == 69) {
-						printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
-					}
-
-					// Send the datagram packet to the server via the send/receive socket.
-					try {
-						sendReceiveSocket.send(sendPacket);
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.exit(1);
+					if (!(Constants.getPacketType(receivePacket.getData()).equals("ERROR"))) {
+						System.out.println("Creating packet . . .");
+	
+						msg = new byte[4];
+						msg[0] = 0;
+						msg[1] = 4;
+						msg[2] = (byte) ((int) blockNum/256);
+						msg[3] = (byte) ((int) blockNum%256);
+	
+						len = msg.length;
+						blockNum++;
+	
+						sendPacket = new DatagramPacket(msg, len, receivePacket.getAddress(), (run==Mode.NORMAL)?receivePacket.getPort():23);
+	
+						System.out.println("Packet created\n");
+						if (sendPort == 23) {
+							printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
+						} if (sendPort == 69) {
+							printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
+						}
+	
+						// Send the datagram packet to the server via the send/receive socket.
+						try {
+							sendReceiveSocket.send(sendPacket);
+						} catch (IOException e) {
+							e.printStackTrace();
+							System.exit(1);
+						}
 					}
 				}
 
@@ -366,7 +362,12 @@ public class Client {
 
 				while ((blockNum-1)*512 < fileArray.length) {
 					if (blockNum > 65535) {
-						System.out.println(new Exception("The file is too large to send"));
+						sendPacket = new DatagramPacket(Constants.formType_03_ErrorPacket(), Constants.formType_03_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+						try {
+							sendReceiveSocket.send(sendPacket);
+						} catch (IOException e) {
+							System.out.println("Client: Error occured while sending error packet! ERROR INFO ---> " + e.getMessage());
+						}
 						System.exit(1);
 					} else {
 						System.out.println("Client: creating packet . . .");
@@ -414,14 +415,14 @@ public class Client {
 
 						System.out.println("Client: Waiting for packet. . .");
 						try {
-							// Block until a datagram is received via sendReceiveSocket.
+							// Block until a data-gram is received via sendReceiveSocket.
 							sendReceiveSocket.receive(receivePacket);
 						} catch (IOException e) {
 							e.printStackTrace();
 							System.exit(1);
 						}
 
-						// Process the received datagram.
+						// Process the received data-gram.
 						if (sendPort == 23) {
 							printable.PrintReceivedPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, receivePacket.getAddress(), receivePacket.getPort(), receivePacket.getLength(), blockNum, receivePacket.getData());
 						} if (sendPort == 69) {
@@ -436,6 +437,13 @@ public class Client {
 								printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.ERROR_SIMULATOR, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
 							} if (sendPort == 69) {
 								printable.PrintSendingPackets(Constants.ServerType.CLIENT, Constants.ServerType.SERVER, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), blockNum, sendPacket.getData());
+							}
+
+							try {
+								sendReceiveSocket.send(sendPacket);
+							} catch (IOException e) {
+								e.printStackTrace();
+								System.exit(1);
 							}
 
 							System.exit(1);

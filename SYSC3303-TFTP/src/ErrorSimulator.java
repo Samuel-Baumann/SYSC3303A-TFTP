@@ -120,9 +120,10 @@ public class ErrorSimulator {
 					send = true;
 					dup = 1;
 				}
+			case 4:
+				send = true;
+				dup = 1;
 			}
-
-
 
 			for(int x = 0; x<dup; x++) {
 				if(send) {
@@ -166,7 +167,7 @@ public class ErrorSimulator {
 			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
 					receivePacket.getAddress(), clientPort);
 
-			
+
 			// Send the datagram packet to the client via a new socket.
 			try {
 				// Construct a new datagram socket and bind it to any port
@@ -221,11 +222,14 @@ public class ErrorSimulator {
 					send = true;
 					dup = 1;
 				}
+			case 4:
+				send = true;
+				dup = 1;
 			}
-			
+
 			len = sendPacket.getLength();
 			printable.PrintSendingPackets(Constants.ServerType.ERROR_SIMULATOR, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), len, null, sendPacket.getData());
-			
+
 			try {
 				sendSocket.send(sendPacket);
 			} catch (IOException e) {
@@ -263,9 +267,10 @@ public class ErrorSimulator {
 					+ "\n\t[0] Lose"
 					+ "\n\t[1] Delay"
 					+ "\n\t[2] Duplicate"
-					+ "\n\t[3] Corrupt");
+					+ "\n\t[3] Corrupt"
+					+ "\n\t[4] Normal Mode");
 			mode = input.nextInt();
-			if(mode>=0 && mode<=3) break;
+			if(mode>=0 && mode<=4) break;
 		}
 
 		// How long should the delay be
@@ -284,15 +289,19 @@ public class ErrorSimulator {
 
 		// Which packet should error be applied to
 		while(true) {
-			System.out.println("What is the type of the packet: "
-					+ "\n\t[1] Read request"
-					+ "\n\t[2] Write request"
-					+ "\n\t[3] Data packet"
-					+ "\n\t[4] Acknowlegement");
-			type = input.nextInt();
-			if(type<=4 && type>=1)break;
+			if (mode != 4) {
+				System.out.println("What is the type of the packet: "
+						+ "\n\t[1] Read request"
+						+ "\n\t[2] Write request"
+						+ "\n\t[3] Data packet"
+						+ "\n\t[4] Acknowlegement");
+				type = input.nextInt();
+			} else {
+				type = 0;
+			}
+			if(type<=4 && type>=0)break;
 		}
-		
+
 		if(mode == 3) {
 			while(true) {
 				System.out.println("What part would you like to corrupt? (1 - opcode, 2 - Filename, 3 - Mode (2-3 for RRQ WRQ only");
@@ -315,6 +324,10 @@ public class ErrorSimulator {
 					break;
 				}
 			}
+		}
+
+		if (mode == 4) {
+			System.out.println("Error Simulator is now in echo mode.");
 		}
 
 		// What block number
