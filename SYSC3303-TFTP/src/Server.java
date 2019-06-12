@@ -156,8 +156,6 @@ class DealWithClientRequest extends Thread {
 		} finally {
 			bufferedReader.close();
 		}
-		
-		System.out.println(whiteListed_ip);
 
 		try{
 			sendReceiveSocket = new DatagramSocket();
@@ -302,7 +300,6 @@ class DealWithClientRequest extends Thread {
 
 				if(temp) { break;}
 			}
-
 
 			int clientBlockNum = (256*receivePacket.getData()[2])+receivePacket.getData()[3];
 			if(clientBlockNum != blockNum){
