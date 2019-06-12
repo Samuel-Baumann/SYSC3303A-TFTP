@@ -1,0 +1,17 @@
+To run our TFTP project, open 3 seperate consoles in Eclipse, one for each Server, Client and ErrorSimulator.java.
+
+If you wish to run the program normally, you can select normal mode from the client's instructions, or select test mode from the client's
+instructions and simply select normal mode from the ErrorSimulator's instructions.
+
+If testing, it is advised that you set up all necessary tests in the ErrorSimulator first, before sending any packets. Select from the wide
+variety of menus whether you wish to lose, delay, corrupt or duplicate packets, and enter the delay time and/or block numbers when prompted
+if the ErrorSimulator requires them (example: Delay DATA block would require you to select [1] Delay, [3] Data Packet, the time in seconds
+you wish to delay, and the block number you wish to postpone).
+
+Once finished, follow the steps in the Client to choose if you wish to be in verbose mode, where your files are stored for reading/writing,
+the name of the file, etc. Once you hit enter after inputting the file name, the packets will be sent to the ErrorSimulator, passed through
+to the server and an ACK will be generated. This repeats until the file transfer is complete!
+
+At any time, you can command the server to Shutdown, in which case the server will no longer create instances accepting new requests.
+However, any active server requests will resolve before the server terminates. After the client is done, you can also issue a shutdown
+command, in which case is the client will terminate. The error Simulator must be terminated forcibly if you wish to change your tests!
