@@ -61,6 +61,7 @@ Server can't shutdown by custom command.
 note - essentially unchanged from iteration 3
 ### Deliverables:
 * README (This document)
+* Detailed Setup instructions
 * UML Class Diagram
 * State Machine Diagrams (Client, Error Simulator, Server)
 * Use Case Document
@@ -68,5 +69,5 @@ note - essentially unchanged from iteration 3
 * Updated code for each component + supplementary classes & constants
 ### Breakdown:
 * Code - Sirak, Henri and Sam (Client/Server by Sirak & Henri, Error Simulator Updates by all 3)
-* Supporting Documentation, Use Cases and State Machine Updates - Sam
+* Supporting Documentation, Use Cases, setup instructions and State Machine Updates - Sam
 * Updated UML Class and Squence Diagrams - Gen
