@@ -193,15 +193,31 @@ public class Client {
 				while (size == 512) {
 					data = new byte[516];
 					receivePacket = new DatagramPacket(data, data.length);
-
-					System.out.println("Client: Waiting for packet. . .");
-					try {
-						// Block until a datagram is received via sendReceiveSocket.
-						sendReceiveSocket.receive(receivePacket);
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.exit(1);
-					}
+					
+					boolean flag;
+					do {
+						flag = true;
+						
+						System.out.println("Client: Waiting for packet. . .");
+						try {
+							// Block until a datagram is received via sendReceiveSocket.
+							sendReceiveSocket.setSoTimeout(5000);
+							sendReceiveSocket.receive(receivePacket);
+						} catch (Exception e) {
+							flag = false;
+							System.out.println("Client Timed Out. Resending Packet...");
+						}
+						
+						if(!flag) {
+							try {
+								sendReceiveSocket.send(sendPacket);
+							} catch (IOException e) {
+								e.printStackTrace();
+								System.exit(1);
+							}
+						}
+					}while(!flag);
+				
 
 					// Process the received datagram.
 					if (sendPort == 23) {
