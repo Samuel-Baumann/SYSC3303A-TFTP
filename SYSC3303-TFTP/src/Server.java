@@ -1,11 +1,15 @@
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +59,7 @@ public class Server{
 		listen = new Listener(quitflag);
 	}
 
-	public void receivingNewPacket() {
+	public void receivingNewPacket() throws IOException {
 		listen.start();
 
 		while(true){
@@ -113,7 +117,7 @@ public class Server{
 		return "WRITE";
 	}
 
-	public static void main(String [] args) {
+	public static void main(String [] args) throws IOException {
 		printType = Constants.ModeType.VERBOSE;
 		Server serv = new Server();
 		serv.receivingNewPacket();
@@ -128,12 +132,32 @@ class DealWithClientRequest extends Thread {
 	private static int actualSize = 0;
 	private Constants.ModeType printMode;
 	private Print printable;
+	private ArrayList<String> whiteListed_ip;
 
-	public DealWithClientRequest(DatagramPacket pckt, String type, Constants.ModeType consolePrintMode){
+	public DealWithClientRequest(DatagramPacket pckt, String type, Constants.ModeType consolePrintMode) throws IOException{
 		this.receivePacket = pckt;
 		this.type = type;
 		this.printMode = consolePrintMode;
 		this.printable = new Print(printMode);
+		this.whiteListed_ip = new ArrayList<String>();
+
+		File file = new File("./Resources/whitelisted_ip");
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+		
+		try {
+			String line = "";
+			while ((line = bufferedReader.readLine()) != null) {
+				whiteListed_ip.add(line);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			bufferedReader.close();
+		}
+		
+		System.out.println(whiteListed_ip);
 
 		try{
 			sendReceiveSocket = new DatagramSocket();
@@ -216,7 +240,7 @@ class DealWithClientRequest extends Thread {
 
 		// IP specific access, if IP is incorrect --> Access Error is triggered
 		if (filename.equals("secureFile")) {
-			if (!(receivePacket.getAddress().toString().equals("/172.17.46.195"))){
+			if (!(whiteListed_ip.contains(receivePacket.getAddress().getHostAddress()))) {
 				sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
 				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
 				try{
@@ -315,16 +339,18 @@ class DealWithClientRequest extends Thread {
 
 		// IP specific access, if IP is incorrect --> Access Error is triggered
 		if (filename.equals("secureFile")) {
-			if (!(receivePacket.getAddress().toString().equals("/172.17.46.195"))){
-				sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
-				printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
-				try{
-					sendReceiveSocket.send(sendPacket);
-				}catch(IOException ioe){
-					ioe.printStackTrace();
+			for (int i = 0; i<whiteListed_ip.size(); i++) {
+				if (!(receivePacket.getAddress().toString().equals(whiteListed_ip.get(i)))){
+					sendPacket = new DatagramPacket(Constants.formType_02_ErrorPacket(), Constants.formType_02_ErrorPacket().length, receivePacket.getAddress(), receivePacket.getPort());
+					printable.PrintSendingPackets(Constants.ServerType.SERVER_CONNECTION_HANDLER, Constants.ServerType.CLIENT, sendPacket.getAddress(), sendPacket.getPort(), sendPacket.getLength(), null, sendPacket.getData());
+					try{
+						sendReceiveSocket.send(sendPacket);
+					}catch(IOException ioe){
+						ioe.printStackTrace();
+						System.exit(1);
+					}
 					System.exit(1);
 				}
-				System.exit(1);
 			}
 		}
 
