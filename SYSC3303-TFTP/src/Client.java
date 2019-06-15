@@ -1,4 +1,4 @@
-import java.util.Scanner;
+import java.util.*;
 import java.io.*;
 import java.net.*;
 
@@ -48,6 +48,7 @@ public class Client {
 		String mode; // filename and mode as Strings
 		int len, sendPort;
 		File directory;
+		InetAddress serverIP = null;
 
 		System.out.println("Type in the filepath for the directory used");
 		s = scan.next();
@@ -89,31 +90,28 @@ public class Client {
 			else
 				sendPort = 23;
 
-			System.out.println("enter a y to display the directory or anything else not to: ");
-			s = scan.next();
-
-			if (s.compareToIgnoreCase("y") == 0) {
-				System.out.println("Directory contains");
-				for (File object : contents) {
-					if (object.isDirectory()) {
-						System.out.println("Directory name: " + object.getName());
-					}
-					if (object.isFile()) {
-						System.out.println("File name: " + object.getName());
-					}
+			boolean bool = false;
+			do {
+				System.out.println("Enter server ip address (127.0.0.1 for localhost): ");
+				try{
+					serverIP = InetAddress.getByName(scan.next());
+					
+					System.out.print("Testing if IP is reachable for 2 seconds...");
+					if(serverIP.isReachable(2000)) {
+						System.out.println("success!\n");
+						bool = true;
+					}else {System.out.println("fail!");}
+					System.out.println();
+				}catch(UnknownHostException uke) {
+					System.out.println("\nERROR: not IP address OR not formatted properly");
+				}catch(IOException ioe) {
+					System.out.println("\nERROR: This ip address isn't reachable!");
 				}
-			}
+				
+			}while(!bool);
+			
 
-			System.out.println("enter a 1 for a read request or a 2 for a write request: ");
-			s = scan.next();
-
-			if (s.compareTo("1") == 0) {
-				msg[1] = 1;
-			} else if (s.compareTo("2") == 0) {
-				msg[1] = 2;
-			}
-
-			while ((s.compareTo("1") != 0) && (s.compareTo("2") != 0)) {
+			do {
 				System.out.println("enter a 1 for a read request or a 2 for a write request: ");
 				s = scan.next();
 
@@ -122,8 +120,20 @@ public class Client {
 				} else if (s.compareTo("2") == 0) {
 					msg[1] = 2;
 				}
-			}
+			}while ((s.compareTo("1") != 0) && (s.compareTo("2") != 0));
 
+			
+			System.out.println("Directory contains");
+			for (File object : contents) {
+				if (object.isDirectory()) {
+					System.out.println("Directory name: " + object.getName());
+				}
+				if (object.isFile()) {
+					System.out.println("File name: " + object.getName());
+				}
+			}
+			
+			
 			if (s.compareTo("1") == 0) {
 				System.out.println("Forming a RRQ connection");
 				System.out.println("Client: creating packet . . .");
@@ -161,12 +171,9 @@ public class Client {
 
 				// Construct a datagram packet that is to be sent to a specified port
 				// on a specified host.
-				try {
-					sendPacket = new DatagramPacket(msg, len, InetAddress.getLocalHost(), sendPort);
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-					System.exit(1);
-				}
+				
+				sendPacket = new DatagramPacket(msg, len, serverIP, sendPort);
+
 
 				System.out.println("Client: packet created\n");
 				if (sendPort == 23) {
@@ -318,12 +325,9 @@ public class Client {
 
 				// Construct a datagram packet that is to be sent to a specified port
 				// on a specified host.
-				try {
-					sendPacket = new DatagramPacket(msg, len, InetAddress.getLocalHost(), sendPort);
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-					System.exit(1);
-				}
+				
+				sendPacket = new DatagramPacket(msg, len, serverIP, sendPort);
+				
 
 				System.out.println("Client: packet created");
 				if (sendPort == 23) {
